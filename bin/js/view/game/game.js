@@ -15,7 +15,13 @@ var WetchGame;
             this.radius = 1; // 主角运动圆半径
             this.angle = 225; // 主角当前角度
             this.angleSpeed = 2; // 弧形加速度
-            this.Circular_obj = null; // 圆心节点
+            this.Circular_obj = null; // 抓力点对象
+            this.FourcePointRouter = []; //着力点路由表
+            /**
+             *
+             * 场景绘制
+             *
+             */
             // 绘制初始场景
             this.initScene = () => {
                 //添加3D场景
@@ -36,11 +42,33 @@ var WetchGame;
                 box.meshRender.material = material;
                 box.transform.position = new Laya.Vector3(0, 5, -1);
             };
-            // 控制圆心位置
+            /**
+             *
+             * 事件
+             *
+             */
+            // 全局鼠标事件
+            this.eventSwitch = () => {
+                // 鼠标按下
+                Laya.stage.on(Laya.Event.MOUSE_DOWN, this, () => {
+                });
+                // 鼠标松开
+                Laya.stage.on(Laya.Event.MOUSE_UP, this, () => {
+                });
+            };
+            /**
+             *
+             * 抓力点与抓力线
+             *
+             */
+            // 控制抓力点位置
             this.Rend_Circular_point = (pos) => {
                 this.Circular_obj.transform.position = new Laya.Vector3(pos.x, pos.y, 0);
             };
-            // 初始化圆心
+            //抓力线绘制
+            this.forceLine = () => {
+            };
+            // 初始化抓力点
             this.Circular_point_obj = () => {
                 var box = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(0.1, 0.1, 0.1)));
                 var material = new Laya.StandardMaterial();
@@ -48,7 +76,13 @@ var WetchGame;
                 box.meshRender.material = material;
                 box.transform.position = new Laya.Vector3(0, 0, 0);
                 this.Circular_obj = box;
+                console.log(this.FourcePointRouter);
             };
+            /**
+             *
+             * 摄像机
+             *
+             */
             // 摄像机动画
             this.cameraAnimation = () => {
                 let anim = () => { this.camera.transform.translate(new Laya.Vector3(-0.08, -0.04, 0)); };
@@ -58,11 +92,16 @@ var WetchGame;
                     Laya.timer.clear(this, anim);
                 }, 1000);
             };
-            // 开启摄像机监听
+            // 控制摄像机偏移
             this.LookAT = (office) => {
                 this.camera.transform.translate(office);
             };
-            // 解析配置表
+            /**
+             *
+             * 立方体生成与配置表解析
+             *
+             */
+            // 方块创建入口
             this.RenderCube = (size) => {
                 let self = this;
                 if (self.Router_game[self.Cube_number].c_type === 0) {
@@ -93,11 +132,25 @@ var WetchGame;
                 }
                 else {
                     // 上部
-                    let Box_X = (index + 1) / 2 * CubeSize.X;
+                    let targetIndex = (index + 1) / 2; //计算当前数据为第几位奇数
+                    let Box_X = targetIndex * CubeSize.X;
                     let Box_Y = CubeSize.Z + height + ((CubeSize.Z / 2) + Number(this.Router_game[index - 1].hp));
+                    // 判断当前立方体是否有 着力点
+                    if (!!this.Router_game[index].skill && Number(this.Router_game[index].skill) === 1) {
+                        this.FourcePointRouter.push({
+                            point: { x: Box_X, y: Box_Y },
+                            data_index: index,
+                        });
+                    }
+                    ;
                     box.transform.translate(new Laya.Vector3(Box_X, Box_Y, 0));
                 }
             };
+            /**
+             *
+             * 主角控制
+             *
+             */
             // 创建主角
             this.Lead = () => {
                 let target_cube = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.SphereMesh(0.1, 8, 8)));
@@ -132,6 +185,11 @@ var WetchGame;
             let target_Y = this.Circular_point.y + this.radius * Math.sin(this.angle * Math.PI / 180);
             this.Lead_cube.transform.position = new Laya.Vector3(target_X, target_Y, 0);
         }
+        /**
+         *
+         * 接口暴露
+         *
+         */
         // 全局变量转换接口
         Global_obj() {
             window['Lead'] = this.Lead_cube; // 主角

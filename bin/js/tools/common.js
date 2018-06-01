@@ -23,7 +23,6 @@ var TOOLS = {
     // 获取立方体
     pullCube: (texture) => {
         let cube = Laya.Pool.getItemByCreateFun("cube", () => {
-            console.log('当前节点是新建的');
             var box = new Laya.MeshSprite3D(new Laya.BoxMesh(CubeSize.X, CubeSize.Y, CubeSize.Z));
             var material = new Laya.StandardMaterial();
             material.diffuseTexture = Laya.Texture2D.load(cubeTexture[texture.Checkpoint][texture.imgType]);
@@ -37,5 +36,10 @@ var TOOLS = {
         Laya.stage.removeChild(target);
         Laya.Pool.recover("cube", target);
     },
+    // 获取两个坐标间的距离
+    getline: (coordinateA, coordinateB) => {
+        let point = new laya.maths.Point(coordinateA.x, coordinateA.y);
+        return point.distance(coordinateB.x, coordinateB.y);
+    }
 };
 //# sourceMappingURL=common.js.map
