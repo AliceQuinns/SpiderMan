@@ -20,6 +20,7 @@ module WetchGame{
         private Circular_obj:Laya.MeshSprite3D = null;// 抓力点对象
         private FourcePointRouter:any = [];//着力点路由表
         private FoucePointIndex:number = 0;// 记录当前着力点的下标
+        private ForceLineObj:Laya.MeshSprite3D;//着力线对象
         constructor(){
            let self = this;
            /* 读取Router表 */
@@ -34,8 +35,10 @@ module WetchGame{
                 self.Lead();
                 /* 初始化圆心 */ 
                 self.Circular_point_obj();
-                // 执行摄像机动画
+                /* 执行摄像机动画 */
                 self.cameraAnimation();
+                /* 绘制着力线 */
+                self.ForceLineMain();
                 /* 全局对象 */
                 self.Global_obj();
            }),null,Laya.Loader.JSON);
@@ -95,6 +98,11 @@ module WetchGame{
  * 
  */
 
+    //着力线
+    private ForceLineMain = ()=>{
+       this.forceLine();
+    }
+
     // 控制着力点位置
     private Rend_Circular_point=(pos)=>{
         this.Circular_obj.transform.position = new Laya.Vector3(pos.x,pos.y,0);
@@ -102,7 +110,20 @@ module WetchGame{
 
     //着力线绘制
     private forceLine=()=>{
+        // 着力点坐标
+        let FoucePosition = new Laya.Vector3(this.FourcePointRouter[this.FoucePointIndex].point.x,
+        this.FourcePointRouter[this.FoucePointIndex].point.y);
+        // 主角坐标
+        let LeadPosition = this.Lead_cube.transform.position;
         let target = TOOLS.getCylinderMesh(0);// 获取着力线
+        this.Game_scene.addChild(target);
+        target.transform.position = new Laya.Vector3(LeadPosition.x,LeadPosition.y,0);
+        this.ForceLineObj = target;
+        // 着色线的实际长度
+        let target_height = TOOLS.getline(FoucePosition,LeadPosition);
+        //目标缩放值
+        let target_scale = target_height/CylinderMeshCube.Y;
+        console.log(target_height);
     }
 
     // 初始化抓力点
@@ -134,7 +155,7 @@ module WetchGame{
 
     // 控制摄像机偏移
     private LookAT = (office:Laya.Vector3)=>{
-            this.camera.transform.translate(office);
+        this.camera.transform.translate(office);
     }
 
 /**
@@ -143,7 +164,7 @@ module WetchGame{
  * 
  */
 
-    // 方块创建入口
+    // 方块创建入口 参数>=2 且为2的倍数
     private RenderCube = (size:number):void=>{
         let self = this;
         if(self.Router_game[self.Cube_number].c_type===0){
@@ -180,7 +201,7 @@ module WetchGame{
             // 判断当前立方体是否有 着力点
             if(!!this.Router_game[index].skill&&Number(this.Router_game[index].skill)===1){
                 this.FourcePointRouter.push({
-                    point: {x:Box_X,y:Box_Y},//立方体坐标
+                    point: {x:Box_X,y:Box_Y-(CubeSize.Z/2)},//着力点坐标
                     data_index: index,// 数据索引
                 })
             }; 
@@ -201,6 +222,13 @@ module WetchGame{
         material.diffuseTexture = Laya.Texture2D.load("res/image/two.png");
         target_cube.meshRender.material = material;
         target_cube.transform.position = new Laya.Vector3(0.8,7,0);
+        /* 添加圆形碰撞器 */
+        let spherecollider:Laya.SphereCollider = target_cube.addComponent(Laya.SphereCollider) as Laya.SphereCollider;
+        /* 设置球形碰撞器中心位置 */
+        spherecollider.center = target_cube.meshFilter.sharedMesh.boundingSphere.center.clone();
+        /* 设置球形碰撞器半径 */
+        spherecollider.radius = target_cube.meshFilter.sharedMesh.boundingSphere.radius;
+
         this.Lead_cube = target_cube;
     }
 
@@ -222,6 +250,7 @@ module WetchGame{
         window['Lead'] = this.Lead_cube;// 主角
         window["camera"] = this.camera;// 摄像机
         window["LookAT"] = this.LookAT;// 摄像机监听
+        window["foce"] = this.ForceLineObj;//着力线
     }
 
     }

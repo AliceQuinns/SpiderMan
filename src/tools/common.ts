@@ -3,7 +3,7 @@ let VIEW = null;
 /* 默认立方体的尺寸 */
 let CubeSize = {X:0.8,Y:0.5,Z:5};
 /* 初始着力线的尺寸 */
-let CylinderMeshCube = {X:0.05,Y:1,Z:8}
+let CylinderMeshCube = {X:0.05,Y:0.1,Z:8}
 /* 立方体贴图 */
 let cubeTexture = [
     [
@@ -35,6 +35,9 @@ var TOOLS = {
             var material: Laya.StandardMaterial = new Laya.StandardMaterial();
             material.diffuseTexture = Laya.Texture2D.load(cubeTexture[texture.Checkpoint][texture.imgType]);
             box.meshRender.material = material;
+            /* 添加盒碰撞组件 */
+            var boxCollider:Laya.BoxCollider = box.addComponent(Laya.BoxCollider) as Laya.BoxCollider;
+            boxCollider.setFromBoundBox(box.meshFilter.sharedMesh.boundingBox);
             return box;
         });
         return cube;
@@ -59,5 +62,14 @@ var TOOLS = {
     getline:(coordinateA,coordinateB)=>{
         let point = new laya.maths.Point(coordinateA.x,coordinateA.y);
         return point.distance(coordinateB.x,coordinateB.y); 
+    },
+    // 获取两点之间角度
+    getRad: (x1, y1, x2, y2)=>{
+        var x = x2 - x1;
+        var y = y2 - x2;
+        var Hypotenuse = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+        var angle = x / Hypotenuse;
+        var rad = Math.acos(angle);
+        if (y2 < y1) { rad = -rad; } return rad;
     }
 }
