@@ -3,7 +3,7 @@ let VIEW = null;
 /* 默认立方体的尺寸 */
 let CubeSize = { X: 0.8, Y: 0.5, Z: 5 };
 /* 初始着力线的尺寸 */
-let CylinderMeshCube = { X: 0.05, Y: 0.1, Z: 8 };
+let CylinderMeshCube = { X: .02, Y: 0.1, Z: 8 };
 /* 立方体贴图 */
 let cubeTexture = [
     [
@@ -64,15 +64,10 @@ var TOOLS = {
     },
     // 获取两点之间角度
     getRad: (x1, y1, x2, y2) => {
-        var x = x2 - x1;
-        var y = y2 - x2;
-        var Hypotenuse = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
-        var angle = x / Hypotenuse;
-        var rad = Math.acos(angle);
-        if (y2 < y1) {
-            rad = -rad;
-        }
-        return rad;
+        var x = Math.abs(x1 - x2);
+        var y = Math.abs(y1 - y2);
+        var z = Math.sqrt(x * x + y * y);
+        return Math.round((Math.asin(y / z) / Math.PI * 180));
     }
 };
 //# sourceMappingURL=common.js.map

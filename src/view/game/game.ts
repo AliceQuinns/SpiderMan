@@ -13,14 +13,21 @@ module WetchGame{
         private Router_game:JSON = null; // 游戏的路由表
         private cube_bg_type:boolean = true; // 立方体的贴图
         private Lead_cube:Laya.MeshSprite3D = null; // 主角模型
-        private Circular_point:Laya.Vector3 = new Laya.Vector3(2,6,0);// 主角运动圆心
+        private Circular_point:Laya.Vector3;// 主角运动圆心
         private radius:number = 1;// 主角运动圆半径
-        private angle:number = 225;// 主角当前角度
-        private angleSpeed:number = 2;// 弧形加速度
+        private angle:number = 270;// 主角当前角度
+        private angleSpeed:number = 1;// 弧形加速度
+        private gravityAcces:number = 5;// 重力加速度
         private Circular_obj:Laya.MeshSprite3D = null;// 抓力点对象
         private FourcePointRouter:any = [];//着力点路由表
         private FoucePointIndex:number = 0;// 记录当前着力点的下标
         private ForceLineObj:Laya.MeshSprite3D;//着力线对象
+        private accelerate:boolean=false;//主角加速运动开关
+        private whereabouts:boolean=false;//主角下落运动开关
+        private Lead_radian:number=60;//控制抛物线运动角度
+        private Lead_step:number=0.01;//控制抛物运动移动速度
+        private LeadLoop:boolean=true;//主角循环运动开启
+        private Leaddirection:boolean = true;//主角循环运动方向
         constructor(){
            let self = this;
            /* 读取Router表 */
@@ -33,12 +40,18 @@ module WetchGame{
                 self.RenderCube(30);
                 /* 创建主角 */
                 self.Lead();
-                /* 初始化圆心 */ 
+                /* 初始化着力点 */ 
                 self.Circular_point_obj();
                 /* 执行摄像机动画 */
                 self.cameraAnimation();
-                /* 绘制着力线 */
-                self.ForceLineMain();
+                /* 初始着力线 */
+                self.ForceLineMain("init");
+                /* 绘制第一个着力线 */
+                //self.ForceLineMain("start");
+                /* 事件入口 */
+                self.eventSwitch();
+                /* update */
+                self.updata();
                 /* 全局对象 */
                 self.Global_obj();
            }),null,Laya.Loader.JSON);
@@ -83,11 +96,14 @@ module WetchGame{
     private eventSwitch=()=>{
         // 鼠标按下
         Laya.stage.on(Laya.Event.MOUSE_DOWN,this,()=>{
-
+            this.LeadLoop = false;//关闭自转
+            this.ForceLineMain("start");//绘制着力线
+            console.log("按下");
         });
         // 鼠标松开
         Laya.stage.on(Laya.Event.MOUSE_UP,this,()=>{
-
+            this.ForceLineMain("end");//回收着力线
+            console.log("松开");
         });
     }
 
@@ -99,8 +115,37 @@ module WetchGame{
  */
 
     //着力线
-    private ForceLineMain = ()=>{
-       this.forceLine();
+    private ForceLineMain = (status:any)=>{
+        if(status === "init"){
+            // 初始化着力线对象
+            let target = TOOLS.getCylinderMesh(0);
+            this.Game_scene.addChild(target);
+            this.ForceLineObj = target;
+            target.transform.pivot = new Laya.Vector3(0,0.05,0);
+            this.forceLine("init");
+        }else if(status === "start"){
+            // 开启
+            this.forceLine();
+        }else if(status === "end"){
+            // 关闭
+            this.deleteFoce(this.ForceLineObj)
+        }
+    }
+
+    // 关闭着力线
+    private deleteFoce=(target)=>{
+        target.transform.scale = new Laya.Vector3(1,1,1);
+         // 关闭主角加速运动
+        this.accelerate = false;
+        // 开启下坠
+        //this.whereabouts = true;
+        // 重置加速度
+        this.angleSpeed = 1;// 弧形加速度
+        this.gravityAcces = 5;// 重力加速度
+        // 还原旋转
+        this.ForceLineObj.transform.localRotationEuler = new Laya.Vector3(0,0,0)
+        // 还原位置
+        this.ForceLineObj.transform.position = new Laya.Vector3(0,0,0);
     }
 
     // 控制着力点位置
@@ -108,25 +153,84 @@ module WetchGame{
         this.Circular_obj.transform.position = new Laya.Vector3(pos.x,pos.y,0);
     }
 
-    //着力线绘制
-    private forceLine=()=>{
-        // 着力点坐标
-        let FoucePosition = new Laya.Vector3(this.FourcePointRouter[this.FoucePointIndex].point.x,
-        this.FourcePointRouter[this.FoucePointIndex].point.y);
+    // 着力点与主角坐标计算及坐标象限确定
+    private _getFoce=()=>{
         // 主角坐标
         let LeadPosition = this.Lead_cube.transform.position;
-        let target = TOOLS.getCylinderMesh(0);// 获取着力线
-        this.Game_scene.addChild(target);
-        target.transform.position = new Laya.Vector3(LeadPosition.x,LeadPosition.y,0);
-        this.ForceLineObj = target;
-        // 着色线的实际长度
-        let target_height = TOOLS.getline(FoucePosition,LeadPosition);
-        //目标缩放值
-        let target_scale = target_height/CylinderMeshCube.Y;
-        console.log(target_height);
+        // 着力点坐标
+        let FoucePosition = null;
+        // 当前象限
+        let quadrant = null;
+        // 选择着力点
+        let _private = ()=>{
+            let pos = new Laya.Vector3(this.FourcePointRouter[this.FoucePointIndex].point.x,
+            this.FourcePointRouter[this.FoucePointIndex].point.y);
+            if(LeadPosition.x>=pos.x){
+                /**
+                 *  当主角位置超过着力点位置时
+                 *  判断是否超过两块立方体的距离 
+                 *  如果超过两块立方体的距离则指向下一个着力点
+                 *  如果未超过则仍返回当前着力点
+                 */
+                if(LeadPosition.x-pos.x>=(2*CubeSize.X)){
+                    this.FoucePointIndex++;
+                    _private();
+                }else{
+                    FoucePosition=pos;
+                }
+            }else{
+                FoucePosition=pos;
+            }
+        };
+        _private();
+        return {a:FoucePosition,b:LeadPosition,quadrant:quadrant};
     }
 
-    // 初始化抓力点
+    // 着力线开启
+    private forceLine=(type:any=null)=>{
+        let _ = this._getFoce();
+        // 获取着力点
+        let FoucePosition = _.a;
+        // 获取主角坐标
+        let LeadPosition = _.b;
+        // 获取着力线对象
+        let target = this.ForceLineObj;
+        // 着色线的实际长度
+        let target_height = TOOLS.getline(FoucePosition,LeadPosition);
+        // 目标缩放值
+        let target_scale = target_height/CylinderMeshCube.Y;
+        /* 角度计算 */
+        // 着色线偏转角度
+        let angleLead =  TOOLS.getRad(LeadPosition.x,LeadPosition.y,FoucePosition.x,FoucePosition.y);
+        // 主角相对着力点角度
+        this.angle = (90-Math.abs(angleLead))+180;
+        if(_.quadrant){
+            console.log("当前主角位置超过着力点了!但没超过阈值");
+            angleLead = 90-angleLead;
+        }else{
+            angleLead = angleLead-90;
+        }
+        // 改变主角运动圆心坐标
+        this.Circular_point = FoucePosition;
+        // 改变主角运动圆半径
+        this.radius = target_height;
+        // 着力线设置
+        target.transform.position = new Laya.Vector3(FoucePosition.x,FoucePosition.y,0);
+        target.transform.scale = new Laya.Vector3(1,target_scale,1);
+        target.transform.rotate(new Laya.Vector3(0,0,angleLead),false,false);
+        this.FoucePointIndex++;
+        console.log("着力线长度为",target_height,"着力线角度为:",angleLead,"主角相对角度为",this.angle);
+        // 移动着力点位置
+        this.Rend_Circular_point(FoucePosition);
+        if(type !== "init"){
+            // 开启主角加速运动
+            this.accelerate = true;
+            //关闭下坠
+            this.whereabouts = false;
+        }
+    }
+
+    // 初始化着力点
     private Circular_point_obj=()=>{
         var box: Laya.MeshSprite3D = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(0.1, 0.1, 0.1))) as Laya.MeshSprite3D;
         var material: Laya.StandardMaterial = new Laya.StandardMaterial();
@@ -238,6 +342,61 @@ module WetchGame{
         let target_Y = this.Circular_point.y + this.radius * Math.sin(this.angle*Math.PI/180);
         this.Lead_cube.transform.position = new Laya.Vector3(target_X,target_Y,0);
     }
+
+    // 控制主角下落
+    private Lead_animate(){
+        let radian = this.Lead_radian;
+        let step = this.Lead_step;
+        let target = this.Lead_cube;
+        let cos = Math.cos(radian*Math.PI/180);//邻边比斜边,60度的话等于1/2
+        let sin = Math.sin(radian*Math.PI/180);//对边比斜边,30度的话等于1/2
+        this.Lead_radian-=5; //角度递减1
+        var a = step;
+        var c = (a/cos);
+        var b = (sin*c);
+        if(this.Lead_radian<=0){return;}
+        target.transform.translate(new Laya.Vector3(a,-b,0));
+    }
+
+/**
+ * 
+ *  updata
+ * 
+ */
+    private updata(){
+        let self = this;
+        Laya.timer.frameLoop(1,this,()=>{
+            //主角加速
+            if(self.accelerate){
+                self.Lead_angle_pos(self.angle);
+                self.angle+=self.angleSpeed;
+                self.angleSpeed+=0.01;
+                // 控制摄像机
+                self.LookAT(new Laya.Vector3(0.01,0,-0.001));
+            }
+            //主角下坠
+            if(self.whereabouts){
+                self.Lead_animate();
+            }
+            // 主角循环运动控制
+            if(self.LeadLoop){
+                if(self.angle>=310){
+                    self.Leaddirection = false;
+                }else if(self.angle<=230){
+                    self.Leaddirection = true;
+                };
+                if(self.Leaddirection){
+                    // 顺时针
+                    self.angle++;
+                }else{
+                    // 逆时针
+                    self.angle--;
+                }
+                self.Lead_angle_pos(self.angle);
+            }
+        })
+    }
+
 
 /**
  * 
