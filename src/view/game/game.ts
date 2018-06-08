@@ -16,7 +16,7 @@ module WetchGame{
         private Circular_point:Laya.Vector3;// 主角运动圆心
         private radius:number = 1;// 主角运动圆半径
         private angle:number = 270;// 主角当前角度
-        private angleSpeed:number = 3;// 弧形加速度
+        private angleSpeed:number = 5;// 弧形加速度
         private Circular_obj:Laya.MeshSprite3D = null;// 抓力点对象
         private FourcePointRouter:any = [];//着力点路由表
         private FoucePointIndex:number = 0;// 记录当前着力点的下标
@@ -29,13 +29,9 @@ module WetchGame{
         private Leaddirection:boolean = true;//主角循环运动方向
         private FoceContent:any = null;//着力线相关信息
         private parabola:any = { // 抛物线运动相关参数
-            speedX: 2,// 横向速度
-            speedY: -2,// 纵向速度
+            speedX: 2,// 横向初速度  米/帧
+            speedY: -2,// 纵向初速度  米/帧
             gravity: 0.0098,// 重力
-            h:0,
-            l:0,
-            Sx:0,
-            Sy:0,
         }
         constructor(){
            let self = this;
@@ -172,10 +168,13 @@ module WetchGame{
     // 关闭着力线
     private deleteFoce=(target)=>{
         target.transform.scale = new Laya.Vector3(1,1,1);
-         // 关闭主角加速运动
+        // 关闭主角加速运动
         this.accelerate = false;
         // 开启下坠
         this.whereabouts = true;
+        // 更改下坠参数
+        this.parabola.speedX = this.angleSpeed;//水平初速度
+        this.parabola.speedY = -this.angleSpeed;//垂直初速度
         // 重置加速度
         this.angleSpeed = 1;// 弧形加速度
         // 还原旋转
@@ -396,14 +395,17 @@ module WetchGame{
         this.Lead_cube.transform.position = new Laya.Vector3(target_X,target_Y,0);
     }
 
-    // 抛物线运动 
+    // 主角抛物线运动 
     private Lead_animate(){
-        let t:number = Laya.timer.delta/1000;//每帧时间
-        this.parabola.Sx+=this.parabola.speedX*t;
-        this.parabola.l=this.parabola.Sx;
-        this.parabola.speedY+=this.parabola.g*t;
-        this.parabola.h+=this.parabola.speedY*t;
-        this.Lead_cube.transform.position = new Laya.Vector3(this.parabola.l,this.parabola.h,0);
+        let t:number = Laya.timer.delta;//每帧时间
+        var distanceX=(this.parabola.speedX*t)/1000;// 水平运动路程
+        this.parabola.speedY+=this.parabola.gravity*t;// 加上重力加速度后的垂直速度
+        if(this.parabola.h<=0){
+            // 关闭下坠
+            this.whereabouts = false;
+            console.log("结束下坠");
+        }
+        this.Lead_cube.transform.translate(new Laya.Vector3( distanceX,-(this.parabola.speedY*t)/1000,0));
     }
 
 /**
@@ -421,7 +423,7 @@ module WetchGame{
                 self.FoceAnimation();
                 self.angleSpeed+=0.01;
                 // 控制摄像机
-               // self.LookAT(new Laya.Vector3(0.01,0,-0.001));
+               self.LookAT(new Laya.Vector3(0.01,0,-0.001));
             }
             //主角下坠
             if(self.whereabouts){
@@ -462,6 +464,7 @@ module WetchGame{
         window["LookAT"] = this.LookAT;// 摄像机监听
         window["foce"] = this.ForceLineObj;//着力线
         window["focepoivet"] = this.Circular_obj;// 着力点
+        window["parabola"]= this.parabola;//抛物配置
     }
 
     }
