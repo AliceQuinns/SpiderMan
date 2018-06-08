@@ -41,12 +41,13 @@ var WetchGame;
                 this.Game_scene = scene;
                 //添加摄像机
                 var camera = (scene.addChild(new Laya.Camera(0, 0.1, 100)));
-                camera.transform.translate(new Laya.Vector3(2, 11, 8), false);
-                camera.transform.rotate(new Laya.Vector3(-12, -20, 0), true, false);
+                camera.transform.translate(new Laya.Vector3(-1, 10, 6), false);
+                camera.transform.localRotationEuler = new Laya.Vector3(-15, -25, 2);
                 this.camera = camera;
-                //方向光
+                //平行光
                 var directionLight = scene.addChild(new Laya.DirectionLight());
-                directionLight.direction = new Laya.Vector3(0.5, -1, -1.0);
+                directionLight.direction = new Laya.Vector3(2, -2, -5);
+                this.directionLight = directionLight;
                 //添加背景图
                 var box = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(50, 0.001, 50)));
                 var material = new Laya.StandardMaterial();
@@ -358,7 +359,7 @@ var WetchGame;
                 /* 初始化着力点 */
                 self.Circular_point_obj();
                 /* 执行摄像机动画 */
-                self.cameraAnimation();
+                // self.cameraAnimation();
                 /* 初始着力线 */
                 self.ForceLineMain("init");
                 /* 绘制第一个着力线 */
@@ -404,7 +405,8 @@ var WetchGame;
                     self.FoceAnimation();
                     self.angleSpeed += 0.01;
                     // 控制摄像机
-                    self.LookAT(new Laya.Vector3(0.01, 0, -0.001));
+                    //    self.LookAT(new Laya.Vector3(0.01,0,-0.001));
+                    this.camera.transform.lookAt(this.Lead_cube.transform.position, new Laya.Vector3(0, 0, 0), false);
                 }
                 //主角下坠
                 if (self.whereabouts) {
@@ -446,6 +448,7 @@ var WetchGame;
             window["foce"] = this.ForceLineObj; //着力线
             window["focepoivet"] = this.Circular_obj; // 着力点
             window["parabola"] = this.parabola; //抛物配置
+            window["directionLight"] = this.directionLight; //灯光
         }
     }
     WetchGame.gameScene = gameScene;

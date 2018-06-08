@@ -8,6 +8,7 @@
 module WetchGame{
     export class gameScene{
         private Game_scene:Laya.Scene; //游戏场景
+        private directionLight;//灯光
         private camera:Laya.Camera; //摄像机
         private Cube_number:number=0; // 记录立方体的总数与当前读取到路由表的数据位置
         private Router_game:JSON = null; // 游戏的路由表
@@ -48,7 +49,7 @@ module WetchGame{
                 /* 初始化着力点 */ 
                 self.Circular_point_obj();
                 /* 执行摄像机动画 */
-                self.cameraAnimation();
+               // self.cameraAnimation();
                 /* 初始着力线 */
                 self.ForceLineMain("init");
                 /* 绘制第一个着力线 */
@@ -76,13 +77,14 @@ module WetchGame{
 
         //添加摄像机
         var camera: Laya.Camera = (scene.addChild(new Laya.Camera(0, 0.1, 100))) as Laya.Camera;
-        camera.transform.translate(new Laya.Vector3(2, 11, 8),false);
-        camera.transform.rotate(new Laya.Vector3(-12, -20, 0),true,false);
+        camera.transform.translate(new Laya.Vector3(-1, 10, 6),false);
+        camera.transform.localRotationEuler = new Laya.Vector3(-15,-25,2);
         this.camera = camera;
 
-        //方向光
+        //平行光
         var directionLight: Laya.DirectionLight = scene.addChild(new Laya.DirectionLight()) as Laya.DirectionLight;
-        directionLight.direction = new Laya.Vector3(0.5, -1, -1.0);
+        directionLight.direction = new Laya.Vector3(2,-2,-5);
+        this.directionLight = directionLight;
     
         //添加背景图
         var box: Laya.MeshSprite3D = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(50, 0.001, 50))) as Laya.MeshSprite3D;
@@ -423,7 +425,8 @@ module WetchGame{
                 self.FoceAnimation();
                 self.angleSpeed+=0.01;
                 // 控制摄像机
-               self.LookAT(new Laya.Vector3(0.01,0,-0.001));
+            //    self.LookAT(new Laya.Vector3(0.01,0,-0.001));
+            this.camera.transform.lookAt(this.Lead_cube.transform.position,new Laya.Vector3(0,0,0),false);
             }
             //主角下坠
             if(self.whereabouts){
@@ -465,6 +468,7 @@ module WetchGame{
         window["foce"] = this.ForceLineObj;//着力线
         window["focepoivet"] = this.Circular_obj;// 着力点
         window["parabola"]= this.parabola;//抛物配置
+        window["directionLight"]=this.directionLight;//灯光
     }
 
     }
