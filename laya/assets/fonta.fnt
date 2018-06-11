@@ -1,0 +1,16 @@
+info face="Microsoft YaHei UI" size=32 bold=0 italic=0 charset="GB2312" unicode=0 stretchH=100 smooth=1 aa=1 padding=1,1,1,1 spacing=1,1 outline=0
+common lineHeight=32 base=26 scaleW=256 scaleH=256 pages=1 packed=0 alphaChnl=1 redChnl=0 greenChnl=0 blueChnl=0
+page id=0 file="FONT_A_0.png"
+chars count=12
+char id=46   x=238   y=0     width=15    height=14    xoffset=-1    yoffset=-1    xadvance=13    page=0  chnl=15
+char id=48   x=0     y=0     width=61    height=60    xoffset=-1    yoffset=-1    xadvance=59    page=0  chnl=15
+char id=49   x=214   y=0     width=23    height=60    xoffset=-1    yoffset=-1    xadvance=21    page=0  chnl=15
+char id=50   x=187   y=61    width=43    height=60    xoffset=-1    yoffset=-1    xadvance=41    page=0  chnl=15
+char id=51   x=0     y=61    width=47    height=60    xoffset=-1    yoffset=-1    xadvance=45    page=0  chnl=15
+char id=52   x=115   y=0     width=49    height=60    xoffset=-1    yoffset=-1    xadvance=47    page=0  chnl=15
+char id=53   x=48    y=61    width=46    height=60    xoffset=-1    yoffset=-1    xadvance=44    page=0  chnl=15
+char id=54   x=142   y=61    width=44    height=60    xoffset=-1    yoffset=-1    xadvance=42    page=0  chnl=15
+char id=55   x=165   y=0     width=48    height=60    xoffset=-1    yoffset=-1    xadvance=46    page=0  chnl=15
+char id=56   x=95    y=61    width=46    height=60    xoffset=-1    yoffset=-1    xadvance=44    page=0  chnl=15
+char id=57   x=0     y=122   width=43    height=60    xoffset=-1    yoffset=-1    xadvance=41    page=0  chnl=15
+char id=75   x=62    y=0     width=52    height=60    xoffset=-1    yoffset=-1    xadvance=50    page=0  chnl=15

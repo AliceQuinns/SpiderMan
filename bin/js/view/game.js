@@ -242,7 +242,7 @@ var WetchGame;
             this.Lead = () => {
                 let target_cube = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.SphereMesh(0.1, 8, 8)));
                 var material = new Laya.StandardMaterial();
-                material.diffuseTexture = Laya.Texture2D.load("res/image/two.png");
+                material.diffuseTexture = Laya.Texture2D.load("res/image/bg1.png");
                 target_cube.meshRender.material = material;
                 target_cube.transform.position = new Laya.Vector3(0.8, 7, 0);
                 /* 添加圆形碰撞器 */
@@ -335,8 +335,8 @@ var WetchGame;
             Laya.timer.frameLoop(1, this, () => {
                 //主角加速
                 if (self.accelerate) {
-                    self.FoceAnimation();
                     self.Lead_angle_pos(self.angle);
+                    self.FoceAnimation();
                     self.angle += self.angleSpeed;
                     self.angleSpeed += 0.01;
                     self.camera.transform.translate(new Laya.Vector3(self.angleSpeed / 100 * 2, self.angleSpeed / 1000, 0), false);

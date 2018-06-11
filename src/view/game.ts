@@ -140,8 +140,8 @@ module WetchGame{
         target.transform.scale = new Laya.Vector3(1,1,1);
         this.accelerate = false; // 关闭主角加速运动
         this.whereabouts = true; // 开启下坠
-        this.parabola.speedX = this.angleSpeed;//水平初速度
-        this.parabola.speedY = -this.angleSpeed;//垂直初速度
+        this.parabola.speedX = this.angleSpeed*0.5;//水平初速度
+        this.parabola.speedY = -this.angleSpeed*2;//垂直初速度
         this.angleSpeed = angleSpeed;// 弧形加速度
         this.ForceLineObj.transform.scale = new Laya.Vector3(1,1,1);// 重置缩放
     }
@@ -319,7 +319,7 @@ module WetchGame{
     private Lead = ()=>{
         let target_cube = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.SphereMesh(0.1, 8, 8))) as Laya.MeshSprite3D;
         var material: Laya.StandardMaterial = new Laya.StandardMaterial();
-        material.diffuseTexture = Laya.Texture2D.load("res/image/two.png");
+        material.diffuseTexture = Laya.Texture2D.load("res/image/bg1.png");
         target_cube.meshRender.material = material;
         target_cube.transform.position = new Laya.Vector3(0.8,7,0);
         /* 添加圆形碰撞器 */
@@ -363,10 +363,10 @@ module WetchGame{
         Laya.timer.frameLoop(1,this,()=>{
             //主角加速
             if(self.accelerate){
-                self.FoceAnimation();
                 self.Lead_angle_pos(self.angle);
+                self.FoceAnimation();
                 self.angle+=self.angleSpeed;
-                self.angleSpeed+=0.1;
+                self.angleSpeed+=0.01;
                 self.camera.transform.translate(new Laya.Vector3(self.angleSpeed/100*2,self.angleSpeed/1000,0),false);
                 //self.camera.transform.translate((new Laya.Vector3(0.01,0,0)),false,false);
             }

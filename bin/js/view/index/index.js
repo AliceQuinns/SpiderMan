@@ -2,7 +2,7 @@ var WetchGame;
 (function (WetchGame) {
     class index {
         constructor() {
-            // index场景
+            // 2dUI场景
         }
     }
     WetchGame.index = index;
