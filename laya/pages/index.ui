@@ -15,7 +15,7 @@
         {
             "x":15,
             "type":"Image",
-            "props":{"y":130,"x":87,"skin":"FIREUP!.png"},
+            "props":{"y":131,"x":192,"skin":"index/LOGO.png"},
             "nodeParent":1,
             "label":"Image",
             "isDirectory":false,
@@ -28,7 +28,7 @@
         {
             "x":15,
             "type":"Image",
-            "props":{"y":1032,"x":60,"var":"setup","skin":"Setup.png","name":"setup"},
+            "props":{"y":1000,"x":35,"var":"setup","skin":"index/set.png","name":"setup"},
             "nodeParent":1,
             "label":"Image(setup)",
             "isDirectory":false,
@@ -41,9 +41,9 @@
         {
             "x":15,
             "type":"Image",
-            "props":{"y":1032,"x":615,"var":"audio","skin":"audio_on.png","name":"audio"},
+            "props":{"y":1000,"x":590,"var":"skin","skin":"index/skin.png","name":"skin"},
             "nodeParent":1,
-            "label":"Image(audio)",
+            "label":"Image(skin)",
             "isDirectory":false,
             "isAniNode":true,
             "hasChild":false,
@@ -54,7 +54,7 @@
         {
             "x":15,
             "type":"Button",
-            "props":{"y":990,"x":159,"var":"start","stateNum":"1","skin":"btn_play_againx.png","name":"start"},
+            "props":{"y":989,"x":159,"var":"start","stateNum":"1","skin":"index/start.png","name":"start"},
             "nodeParent":1,
             "label":"Button(start)",
             "isDirectory":false,
@@ -67,26 +67,13 @@
         {
             "x":15,
             "type":"Text",
-            "props":{"y":876,"x":167,"var":"title","text":"按住可加速 松开可飞行","name":"title","fontSize":40,"font":"Microsoft YaHei","color":"#ffffff","bold":false},
+            "props":{"y":836,"x":159,"var":"title","text":"按住可加速 松开可飞行","name":"title","fontSize":40,"font":"Microsoft YaHei","color":"#ffffff","bold":false,"alpha":1},
             "nodeParent":1,
             "label":"Text(title)",
             "isDirectory":false,
             "isAniNode":true,
             "hasChild":false,
             "compId":9,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"Label",
-            "props":{"y":136,"x":326,"visible":false,"var":"fraction","text":"0","name":"fraction","fontSize":100,"font":"fonta","color":"#ffffff"},
-            "nodeParent":1,
-            "label":"Label(fraction)",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":11,
             "child":[
                 ]
         }],

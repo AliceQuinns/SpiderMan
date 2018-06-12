@@ -4,11 +4,14 @@ class LayaAir3D {
         //初始化微信小游戏
         Laya.MiniAdpter.init();
         //初始化引擎
-        Laya3D.init(1280, 720, true);
+        Laya3D.init(720, 1280, true);
 
         //适配模式
-        Laya.stage.scaleMode = Laya.Stage.SCALE_FULL;
-        Laya.stage.screenMode = Laya.Stage.SCREEN_NONE;
+        Laya.stage.alignV = "middle";
+        Laya.stage.alignH = "center";
+
+        Laya.stage.scaleMode = "exactfit";
+        Laya.stage.screenMode = "vertical";
 
         //开启统计信息
         Laya.Stat.show();

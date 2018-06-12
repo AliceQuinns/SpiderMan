@@ -29,6 +29,82 @@ var WetchGame;
             };
             /**
              *
+             *  main
+             *
+             */
+            this.Main2D = () => {
+                /* 读取Router表 加载3d场景 */
+                Laya.loader.load("res/router/Router.json", Laya.Handler.create(this, this.Main3D), null, Laya.Loader.JSON);
+            };
+            this.Main3D = () => {
+                let self = this;
+                /* 保存数据 */
+                self.Router_game = Laya.Loader.getRes('res/router/Router.json').data;
+                /* 绘制3D场景 */
+                self.initScene();
+                /* 渲染初始立方体 */
+                self.RenderCube(30);
+                /* 创建主角 */
+                self.Lead();
+                /* 初始化着力点 */
+                self.Circular_point_obj();
+                /* 初始着力线 */
+                self.ForceLineMain("init");
+                /* update */
+                self.updata();
+                /* 全局对象 */
+                self.Global_obj();
+                // 执行摄像机动画并绘制2d场景
+                this.cameraAnimation(() => {
+                    let scene = Laya.stage.addChild(new ui.indexUI);
+                    this.scene2D = scene;
+                    scene.zOrder = 999;
+                    this.animation2D(); //初始动画
+                    this.startGame(); //开始游戏
+                });
+            };
+            /**
+             *
+             * 2d场景操作
+             *
+             */
+            this.startGame = () => {
+                let btn = this.scene2D.getChildByName("start");
+                btn.on(Laya.Event.CLICK, this, (e) => {
+                    btn.offAll();
+                    // e.stopPropagation();
+                    this.LeadLoop = false; //关闭主角自转
+                    this.ForceLineMain("start"); //绘制着力线
+                    this.RenderCube(2);
+                    this.eventSwitch();
+                    this.scene2D.removeSelf();
+                });
+            };
+            // 位图字体绘制
+            this.bitmaptext = () => {
+            };
+            // 字体动画
+            this.animation2D = () => {
+                let _ = this.scene2D;
+                let title = _.getChildByName("title");
+                let status = true;
+                let alphaanim = () => {
+                    if (status) {
+                        Laya.Tween.to(title, { alpha: 0 }, 1000, Laya.Ease.quartOut, Laya.Handler.create(this, () => {
+                            alphaanim();
+                        }));
+                    }
+                    else {
+                        Laya.Tween.to(title, { alpha: 1 }, 1000, Laya.Ease.quartOut, Laya.Handler.create(this, () => {
+                            alphaanim();
+                        }));
+                    }
+                    status = !status;
+                };
+                alphaanim();
+            };
+            /**
+             *
              * 场景绘制
              *
              */
@@ -49,7 +125,7 @@ var WetchGame;
                 //添加背景图
                 var box = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(50, 0.001, 50)));
                 var material = new Laya.StandardMaterial();
-                material.diffuseTexture = Laya.Texture2D.load("res/image/1.png");
+                material.diffuseTexture = Laya.Texture2D.load("res/image/color/backgroud.png");
                 box.meshRender.material = material;
                 box.transform.position = new Laya.Vector3(0, 5, -1);
             };
@@ -61,7 +137,6 @@ var WetchGame;
             this.eventSwitch = () => {
                 // 鼠标按下
                 Laya.stage.on(Laya.Event.MOUSE_DOWN, this, () => {
-                    this.LeadLoop = false; //关闭自转
                     this.ForceLineMain("start"); //绘制着力线
                     this.RenderCube(2);
                 });
@@ -171,18 +246,22 @@ var WetchGame;
              *
              */
             // 摄像机动画
-            this.cameraAnimation = () => {
-                let anim = () => { this.camera.transform.translate(new Laya.Vector3(-0.08, -0.04, 0)); };
-                Laya.timer.loop(10, this, anim);
-                window.setTimeout(() => {
-                    /* 关闭动画 */
-                    Laya.timer.clear(this, anim);
-                }, 1000);
+            this.cameraAnimation = (call) => {
+                this.camera.transform.translate((new Laya.Vector3(0, 0, 20)), false);
+                var a = 0;
+                let anim = () => {
+                    if (a >= 20) {
+                        Laya.timer.clear(this, anim);
+                        window.setTimeout(() => {
+                            call(); //执行回调
+                        }, 300);
+                    }
+                    ;
+                    this.camera.transform.translate(new Laya.Vector3(0, 0, -0.2), false);
+                    a += 0.2;
+                };
+                Laya.timer.loop(1, this, anim);
             };
-            // // 控制摄像机偏移
-            // private LookAT = (office:Laya.Vector3)=>{
-            //     this.camera.transform.translate(office,false,false);
-            // }
             /**
              *
              * 立方体生成与配置表解析
@@ -242,7 +321,7 @@ var WetchGame;
             this.Lead = () => {
                 let target_cube = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.SphereMesh(0.1, 8, 8)));
                 var material = new Laya.StandardMaterial();
-                material.diffuseTexture = Laya.Texture2D.load("res/image/bg1.png");
+                material.diffuseTexture = Laya.Texture2D.load("res/image/color/bgd_1.png");
                 target_cube.meshRender.material = material;
                 target_cube.transform.position = new Laya.Vector3(0.8, 7, 0);
                 /* 添加圆形碰撞器 */
@@ -253,32 +332,8 @@ var WetchGame;
                 spherecollider.radius = target_cube.meshFilter.sharedMesh.boundingSphere.radius;
                 this.Lead_cube = target_cube;
             };
-            let self = this;
-            /* 读取Router表 */
-            Laya.loader.load("res/router/Router.json", Laya.Handler.create(this, () => {
-                /* 保存数据 */
-                self.Router_game = Laya.Loader.getRes('res/router/Router.json').data;
-                /* 绘制3D场景 */
-                self.initScene();
-                /* 渲染初始立方体 */
-                self.RenderCube(30);
-                /* 创建主角 */
-                self.Lead();
-                /* 初始化着力点 */
-                self.Circular_point_obj();
-                /* 执行摄像机动画 */
-                // self.cameraAnimation();
-                /* 初始着力线 */
-                self.ForceLineMain("init");
-                /* 绘制第一个着力线 */
-                //self.ForceLineMain("start");
-                /* 事件入口 */
-                self.eventSwitch();
-                /* update */
-                self.updata();
-                /* 全局对象 */
-                self.Global_obj();
-            }), null, Laya.Loader.JSON);
+            /* 加载2d资源 */
+            Laya.loader.load(["res/atlas/index.atlas"], Laya.Handler.create(this, this.Main2D));
         }
         // 坐标象限
         _quadrant(LeadPosition, FoucePosition) {
@@ -378,11 +433,11 @@ var WetchGame;
         Global_obj() {
             window['Lead'] = this.Lead_cube; // 主角
             window["camera"] = this.camera; // 摄像机
-            window["LookAT"] = this.LookAT; // 摄像机监听
             window["foce"] = this.ForceLineObj; //着力线
             window["focepoivet"] = this.Circular_obj; // 着力点
             window["parabola"] = this.parabola; //抛物配置
             window["directionLight"] = this.directionLight; //灯光
+            window["scene2D"] = this.scene2D; //2d场景
         }
     }
     WetchGame.gameScene = gameScene;

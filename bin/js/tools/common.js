@@ -9,18 +9,18 @@ let angleSpeed = 2; // 度/帧
 /* 立方体贴图 */
 let cubeTexture = [
     [
-        "res/image/bg1.png",
-        "res/image/bg2.png"
+        "res/image/color/bgc_1.png",
+        "res/image/color/bgc_2.png"
     ]
 ];
 /* 圆柱体贴图 */
 let CylinderMeshTexture = [
-    "res/image/bg1.png",
-    "res/image/bg2.png"
+    "res/image/color/bga_1.png",
+    "res/image/color/bgc_2.png"
 ];
 /* 着力点贴图 */
 let Circular_point_texture = [
-    "res/image/bg1.png"
+    "res/image/color/bgc_1.png"
 ];
 var TOOLS = {
     // 切换场景并清空上级场景

@@ -1,8 +1,10 @@
 D .
-R AF9CCC17 audio_on.png
-R B5732CA2 btn_play_againx.png
+D index
+P AF9CCC17 audio_on.png
+P B5732CA2 btn_play_againx.png
 R 198701EC fire rides.png
-R 8527E56F FIREUP!.png
-R 164D513E fonta.fnt
-R 2B387419 fonta.png
-R 3E1FEAFB Setup.png
+P 125CAE07 LOGO.png
+P 82785172 more.png
+P 7AB59E54 set.png
+P A5D950BD skin.png
+P E22D2F67 start.png
