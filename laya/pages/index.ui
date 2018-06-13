@@ -2,7 +2,7 @@
     "x":0,
     "type":"Dialog",
     "selectedBox":1,
-    "selecteID":11,
+    "selecteID":10,
     "props":{"width":720,"sceneColor":"#000000","height":1280},
     "nodeParent":-1,
     "label":"Dialog",
@@ -74,6 +74,19 @@
             "isAniNode":true,
             "hasChild":false,
             "compId":9,
+            "child":[
+                ]
+        },
+        {
+            "x":15,
+            "type":"Clip",
+            "props":{"y":149,"x":309,"visible":false,"skin":"index/fire rides.png","index":6,"clipX":11},
+            "nodeParent":1,
+            "label":"Clip",
+            "isDirectory":false,
+            "isAniNode":true,
+            "hasChild":false,
+            "compId":10,
             "child":[
                 ]
         }],

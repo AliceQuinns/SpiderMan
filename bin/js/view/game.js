@@ -71,17 +71,38 @@ var WetchGame;
             this.startGame = () => {
                 let btn = this.scene2D.getChildByName("start");
                 btn.on(Laya.Event.CLICK, this, (e) => {
-                    btn.offAll();
-                    // e.stopPropagation();
+                    btn.offAll(); // 防止重复点击
+                    this.bitmaptext(); //绘制分数节点
+                    e.stopPropagation();
                     this.LeadLoop = false; //关闭主角自转
-                    this.ForceLineMain("start"); //绘制着力线
-                    this.RenderCube(2);
-                    this.eventSwitch();
-                    this.scene2D.removeSelf();
+                    this.ForceLineMain("end"); //回收着力线
+                    this.eventSwitch(); // 开启事件监听
+                    this.scene2D.removeChildren(); // 删除全部子节点
                 });
             };
             // 位图字体绘制
-            this.bitmaptext = () => {
+            this.bitmaptext = (text = null) => {
+                if (text) {
+                    this.Score.text = text;
+                }
+                else {
+                    console.log("绘制位图字体");
+                    let fonttext = new Laya.BitmapFont();
+                    this.fonttext = fonttext;
+                    fonttext.loadFont("res/bitmapFont/fonta.fnt", new Laya.Handler(this, () => {
+                        fonttext.setSpaceWidth(10);
+                        Laya.Text.registerBitmapFont("0", fonttext);
+                        let score = new Laya.Text();
+                        score.text = "0";
+                        score.align = "center";
+                        score.fontSize = 100;
+                        score.x = Laya.stage.width / 2;
+                        score.y = 100;
+                        score.font = this.fonttext;
+                        this.Score = score;
+                        this.scene2D.addChild(score);
+                    }));
+                }
             };
             // 字体动画
             this.animation2D = () => {
@@ -138,7 +159,7 @@ var WetchGame;
                 // 鼠标按下
                 Laya.stage.on(Laya.Event.MOUSE_DOWN, this, () => {
                     this.ForceLineMain("start"); //绘制着力线
-                    this.RenderCube(2);
+                    this.RenderCube(2); // 创建方块
                 });
                 // 鼠标松开
                 Laya.stage.on(Laya.Event.MOUSE_UP, this, () => {
@@ -169,13 +190,21 @@ var WetchGame;
             };
             // 关闭着力线
             this.deleteFoce = () => {
+                let increment = this.angleSpeed - angleSpeed; //加速度增量
+                console.log("当前加速度", this.angleSpeed, "增量", increment);
                 let target = this.ForceLineObj;
                 target.transform.scale = new Laya.Vector3(1, 1, 1);
                 this.accelerate = false; // 关闭主角加速运动
                 this.whereabouts = true; // 开启下坠
-                this.parabola.speedX = this.angleSpeed * 0.5; //水平初速度
-                this.parabola.speedY = -this.angleSpeed * 2; //垂直初速度
-                this.angleSpeed = angleSpeed; // 弧形加速度
+                if (increment === 0) {
+                    this.parabola.speedX = 2; //水平初速度
+                }
+                else {
+                    this.parabola.speedX = 100 / (increment * 100); //水平初速度
+                }
+                this.parabola.speedY = -increment * 10; //垂直初速度
+                console.log("水平", this.parabola.speedX, "垂直", this.parabola.speedY);
+                this.angleSpeed = angleSpeed; // 还原弧形加速度
                 this.ForceLineObj.transform.scale = new Laya.Vector3(1, 1, 1); // 重置缩放
             };
             // 控制着力点
@@ -271,8 +300,11 @@ var WetchGame;
             this.RenderCube = (size) => {
                 let self = this;
                 if (self.Router_game[self.Cube_number].c_type === 0) {
+                    console.log(self.Cube_number, "无配置");
+                    self.Cube_number = 0;
                     return;
                 }
+                ;
                 for (let i = size; i--;) {
                     (self.Cube_number % 2 === 0)
                         ?
@@ -333,7 +365,10 @@ var WetchGame;
                 this.Lead_cube = target_cube;
             };
             /* 加载2d资源 */
-            Laya.loader.load(["res/atlas/index.atlas"], Laya.Handler.create(this, this.Main2D));
+            Laya.loader.load([
+                "res/atlas/index.atlas",
+                "res/bitmapFont/fonta.fnt",
+            ], Laya.Handler.create(this, this.Main2D));
         }
         // 坐标象限
         _quadrant(LeadPosition, FoucePosition) {
@@ -363,22 +398,25 @@ var WetchGame;
         }
         // 控制主角
         Lead_angle_pos(angle) {
+            let before_pos = this.Lead_cube.transform.position;
             let target_X = this.Circular_point.x + this.radius * Math.cos(this.angle * Math.PI / 180);
             let target_Y = this.Circular_point.y + this.radius * Math.sin(this.angle * Math.PI / 180);
             this.Lead_cube.transform.position = new Laya.Vector3(target_X, target_Y, 0);
+            return { x: target_X - before_pos.x, y: target_Y - before_pos.y };
         }
         // 主角抛物线运动 
         Lead_animate() {
             let t = Laya.timer.delta; //每帧时间
-            var distanceX = (this.parabola.speedX * t) / 1000; // 水平运动路程
+            var distanceX = (this.parabola.speedX * t) / 1000; // 水平路程
             this.parabola.speedY += this.parabola.gravity * t; // 加上重力加速度后的垂直速度
-            if (this.parabola.h <= 0) {
+            let h = (this.parabola.speedY * t) / 1000; //垂直路程
+            if (this.parabola.speedY >= 10) {
                 // 关闭下坠
                 this.whereabouts = false;
                 console.log("结束下坠");
             }
-            this.camera.transform.translate(new Laya.Vector3(distanceX, -(this.parabola.speedY * t) / 1000, 0), false);
-            this.Lead_cube.transform.translate(new Laya.Vector3(distanceX, -(this.parabola.speedY * t) / 1000, 0));
+            this.camera.transform.translate(new Laya.Vector3(distanceX, -h, 0), false);
+            this.Lead_cube.transform.translate(new Laya.Vector3(distanceX, -h, 0));
         }
         /**
          *
@@ -390,12 +428,11 @@ var WetchGame;
             Laya.timer.frameLoop(1, this, () => {
                 //主角加速
                 if (self.accelerate) {
-                    self.Lead_angle_pos(self.angle);
-                    self.FoceAnimation();
+                    let office = self.Lead_angle_pos(self.angle); //移动主角
+                    self.FoceAnimation(); //重绘着力线
                     self.angle += self.angleSpeed;
                     self.angleSpeed += 0.01;
-                    self.camera.transform.translate(new Laya.Vector3(self.angleSpeed / 100 * 2, self.angleSpeed / 1000, 0), false);
-                    //self.camera.transform.translate((new Laya.Vector3(0.01,0,0)),false,false);
+                    self.camera.transform.translate(new Laya.Vector3(office.x, office.y, 0), false);
                 }
                 //主角下坠
                 if (self.whereabouts) {
