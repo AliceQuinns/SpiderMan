@@ -11,7 +11,8 @@ module WetchGame{
         private scene2D: Laya.Scene;//2d场景
         private directionLight;//灯光
         private camera:Laya.Camera; //摄像机
-        private Cube_number:number=0; // 记录立方体的总数与当前读取到路由表的数据位置
+        private Cube_number:number=0; // 记录位置
+        private Cube_pos:number=0; // 记录数据位置
         private Router_game:JSON = null; // 游戏的路由表
         private cube_bg_type:boolean = true; // 立方体的贴图
         private Lead_cube:Laya.MeshSprite3D = null; // 主角模型
@@ -59,6 +60,7 @@ module WetchGame{
         let self = this;
         /* 保存数据 */
         self.Router_game = Laya.Loader.getRes('res/router/Router.json').data;
+        console.log(self.Router_game);
         /* 绘制3D场景 */
         self.initScene();
         /* 渲染初始立方体 */
@@ -186,8 +188,11 @@ module WetchGame{
     private eventSwitch=()=>{
         // 鼠标按下
         Laya.stage.on(Laya.Event.MOUSE_DOWN,this,()=>{
+            if(this.FourcePointRouter.length-this.FoucePointIndex<=2){
+                console.log("创建方块");
+                 this.RenderCube(30);// 创建方块
+            }
             this.ForceLineMain("start");//绘制着力线
-            this.RenderCube(2);// 创建方块
         });
         // 鼠标松开
         Laya.stage.on(Laya.Event.MOUSE_UP,this,()=>{
@@ -221,7 +226,7 @@ module WetchGame{
     // 关闭着力线
     private deleteFoce=()=>{
         let increment = this.angleSpeed-angleSpeed;//加速度增量
-        console.log("当前加速度",this.angleSpeed,"增量",increment);
+        //console.log("当前加速度",this.angleSpeed,"增量",increment);
         let target = this.ForceLineObj;
         target.transform.scale = new Laya.Vector3(1,1,1);
         this.accelerate = false; // 关闭主角加速运动
@@ -230,10 +235,22 @@ module WetchGame{
              this.parabola.speedX = 2;//水平初速度
         }else{
              this.parabola.speedX = 100/(increment*100);//水平初速度
+             if(this.parabola.speedX >= 10){
+                 // 最大水平速度
+                 this.parabola.speedX = 5;
+             }
         }
         this.parabola.speedY = -increment*10;//垂直初速度
-        console.log("水平",this.parabola.speedX,"垂直",this.parabola.speedY);
-        this.angleSpeed = angleSpeed;// 还原弧形加速度
+        if(increment*10>=8){
+            this.parabola.speedY = -8;
+        }
+        //console.log("水平",this.parabola.speedX,"垂直",this.parabola.speedY);
+        // if(this.parabola.speedX>=angleSpeed){
+        //      this.angleSpeed = this.parabola.speedX;
+        // }else{
+        //     this.angleSpeed = angleSpeed;
+        // }
+        this.angleSpeed = angleSpeed;
         this.ForceLineObj.transform.scale = new Laya.Vector3(1,1,1);// 重置缩放
     }
 
@@ -245,7 +262,7 @@ module WetchGame{
     // 获取信息
     private _getFocecontent=(index)=>{
         let pos = new Laya.Vector3(this.FourcePointRouter[index].point.x,
-        this.FourcePointRouter[this.FoucePointIndex].point.y);
+        this.FourcePointRouter[index].point.y);
         return pos;
     }
 
@@ -261,7 +278,11 @@ module WetchGame{
         let angleLead = angleData.angleLead;
         this.angle = angleData.angleLead+270;
         this.Circular_point = FoucePosition;
-        this.radius = target_height;
+        this.radius = target_height;// 圆半径
+        console.log("半径",target_height);
+        if(target_height<=1){
+            this.angleSpeed = 5;
+        }
         target.transform.position = new Laya.Vector3(FoucePosition.x,FoucePosition.y,0);
         target.transform.scale = new Laya.Vector3(1,target_scale,1);
         target.transform.localRotationEuler = new Laya.Vector3(0,0,angleLead);
@@ -274,7 +295,7 @@ module WetchGame{
     private _FocusPoint=(LeadPosition)=>{
         let pos = this._getFocecontent(this.FoucePointIndex);// 着力点坐标
         let size = TOOLS.getline(pos,LeadPosition);// 计算主角和着力点的距离
-        if(size<=CubeSize.X*1.5||Math.abs(LeadPosition.x-pos.x)<=CubeSize.X*1.5){
+        if(size<=CubeSize.X*2||Math.abs(LeadPosition.x-pos.x)<=CubeSize.X*1.5){
             this.FoucePointIndex++;
             return pos;// 正常情况
         }else if(pos.x-LeadPosition.x>=CubeSize.X*1.5){
@@ -360,12 +381,11 @@ module WetchGame{
     // 方块创建入口 参数>=2 且为2的倍数
     private RenderCube = (size:number):void=>{
         let self = this;
-        if(self.Router_game[self.Cube_number].c_type===0){
-            console.log(self.Cube_number,"无配置");
-            self.Cube_number = 0;
-            return;
-        };
         for(let i=size;i--;){
+            if(self.Router_game[self.Cube_number].c_type=="0"){
+                console.log(self.Cube_number,"无配置");
+                (self.Cube_number%2===0)?self.Cube_number=1:self.Cube_number=0;
+            };
                 (self.Cube_number%2 === 0)
                 ?
                     self.AddBox(0,self.Cube_number)// 偶数在下
@@ -373,7 +393,7 @@ module WetchGame{
                     self.AddBox(1,self.Cube_number);// 奇数在上
                 //console.log(self.Cube_number);
                 self.Cube_number++;
-            }
+        }
     }
 
     // 创建立方体方块
@@ -381,7 +401,7 @@ module WetchGame{
         let box = TOOLS.pullCube({Checkpoint:0,imgType:(this.cube_bg_type)?0:1});//从对象池请求立方体
         this.Game_scene.addChild(box);//添加立方体
         //console.log(this.Router_game[index]);
-        let height = Number(this.Router_game[index].hp);// 获取立方体设置Y轴高度
+        let height = Number(this.Router_game[index].hp);// 获取立方体高度
         if(type === 0){
             // 下部
             let Box_X = (index+2)/2*CubeSize.X; 
@@ -393,7 +413,7 @@ module WetchGame{
             let targetIndex = (index+1)/2;//计算当前数据为第几位奇数
             let Box_X = targetIndex*CubeSize.X;
             let Box_Y = CubeSize.Z+height+((CubeSize.Z/2)+Number(this.Router_game[index-1].hp));
-            // 判断当前立方体是否有 着力点
+            // 判断当前立方体是否有着力点
             if(!!this.Router_game[index].skill&&Number(this.Router_game[index].skill)===1){
                 this.FourcePointRouter.push({
                     point: {x:Box_X,y:Box_Y-(CubeSize.Z/2)},//着力点坐标
@@ -438,7 +458,7 @@ module WetchGame{
 
     // 主角抛物线运动 
     private Lead_animate(){
-        let t:number = Laya.timer.delta;//每帧时间
+        let t:number = 15;//每帧时间
         var distanceX=(this.parabola.speedX*t)/1000;// 水平路程
         this.parabola.speedY+=this.parabola.gravity*t;// 加上重力加速度后的垂直速度
         let h = (this.parabola.speedY*t)/1000;//垂直路程
@@ -465,6 +485,9 @@ module WetchGame{
                 self.FoceAnimation();//重绘着力线
                 self.angle+=self.angleSpeed;
                 self.angleSpeed+=0.01;
+                if(self.angleSpeed>=3){
+                    self.angleSpeed = 3;
+                }
                 self.camera.transform.translate(new Laya.Vector3(office.x,office.y,0),false);
             }
             //主角下坠

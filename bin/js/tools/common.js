@@ -5,7 +5,7 @@ let CubeSize = { X: 0.8, Y: 0.5, Z: 5 };
 /* 初始着力线的尺寸 */
 let CylinderMeshCube = { X: .02, Y: 0.1, Z: 8 };
 /* 初始球体加速度 */
-let angleSpeed = 1; // 度/帧
+let angleSpeed = 0.8; // 度/帧
 /* 立方体贴图 */
 let cubeTexture = [
     [
