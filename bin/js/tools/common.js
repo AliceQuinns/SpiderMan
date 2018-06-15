@@ -54,7 +54,7 @@ var TOOLS = {
         });
         return cube;
     },
-    // 回收
+    // 对象池回收
     pushCube: (type, target) => {
         Laya.stage.removeChild(target);
         Laya.Pool.recover(type, target);
@@ -70,6 +70,21 @@ var TOOLS = {
         var y = Math.abs(y1 - y2);
         var z = Math.sqrt(x * x + y * y);
         return Math.round((Math.asin(y / z) / Math.PI * 180));
-    }
+    },
+    // 根据弧长计算角度
+    getAngle: (radian, radius) => {
+        return radian / (Math.PI * radius) * 180;
+    },
+    // 弧度与角度互转
+    getAngleTransform: (value, type) => {
+        if (type === "ang") {
+            // 弧度转角度 返回角度
+            return value * (180 / Math.PI);
+        }
+        else if (type === "rad") {
+            // 角度转弧度 返回弧度
+            return value * (Math.PI / 180);
+        }
+    },
 };
 //# sourceMappingURL=common.js.map

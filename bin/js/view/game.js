@@ -7,7 +7,8 @@ var WetchGame;
 (function (WetchGame) {
     class gameScene {
         constructor() {
-            this.Cube_number = 0; // 记录立方体的总数与当前读取到路由表的数据位置
+            this.Cube_number = 0; // 记录位置
+            this.Cube_pos = 0; // 记录数据位置
             this.Router_game = null; // 游戏的路由表
             this.cube_bg_type = true; // 立方体的贴图
             this.Lead_cube = null; // 主角模型
