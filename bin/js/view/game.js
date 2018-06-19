@@ -6,27 +6,47 @@
 var WetchGame;
 (function (WetchGame) {
     class gameScene {
+        // 单摆运动
         constructor() {
-            this.Cube_number = 0; // 记录位置
+            this.Cube_number = 0; // 位置
             this.Cube_pos = 0; // 记录数据位置
             this.Router_game = null; // 游戏的路由表
-            this.cube_bg_type = true; // 立方体的贴图
+            this.cube_bg_type = true; // 贴图
             this.Lead_cube = null; // 主角模型
-            this.radius = 1; // 主角运动圆半径
-            this.angle = 270; // 主角当前角度
-            this.angleSpeed = angleSpeed; // 弧形加速度
-            this.Circular_obj = null; // 抓力点对象
+            //private Circular_point:Laya.Vector3;// 主角运动圆心
+            //private radius:number = 1;// 主角运动圆半径
+            //private angle:number = 270;// 主角当前角度
+            //private angleSpeed:number = angleSpeed;// 弧形加速度
+            this.Circular_obj = null; // 着力点对象
             this.FourcePointRouter = []; //着力点路由表
             this.FoucePointIndex = 0; // 记录当前着力点的下标
-            this.accelerate = false; //主角加速运动开关
-            this.whereabouts = false; //主角下落运动开关
-            this.Lead_radian = 60; //控制抛物线运动角度
-            this.LeadLoop = true; //主角循环运动开启
-            this.Leaddirection = true; //主角循环运动方向
-            this.parabola = {
-                speedX: 2,
-                speedY: -2,
-                gravity: 0.0098,
+            this.accelerate = false; // 圆周运动开关
+            this.whereabouts = false; // 斜抛运动开关
+            this.LeadLoop = true; // 单摆运动开关
+            this.Leaddirection = true; // 单摆运动方向控制
+            // private parabola:any = { // 重力运动相关参数
+            //     speedX: 2,// 横向初速度  米/帧
+            //     speedY: -2,// 纵向初速度  米/帧
+            //     gravity: 0.0098,// 重力
+            // };
+            // 圆周运动
+            this.Circumferential = {
+                angularVelocity: 5,
+                LineSpeed: 0,
+                angle: 0,
+                speed: 1,
+                increment: 0.1,
+                time: 0,
+                radius: 0,
+                Circular_point: 0 // 圆心坐标
+            };
+            // 斜抛运动
+            this.SlantingThrow = {
+                gravity: 9.8,
+                v0: 5,
+                acceleration: 0,
+                angle: 45,
+                time: 0,
             };
             /**
              *
@@ -195,34 +215,40 @@ var WetchGame;
             };
             // 关闭着力线
             this.deleteFoce = () => {
-                let increment = this.angleSpeed - angleSpeed; //加速度增量
+                // 斜抛运动参数
+                this.SlantingThrow.v0 = this.Circumferential.angularVelocity * this.Circumferential.radius; // 线速度
+                this.SlantingThrow.angle = 45; // 角度
+                //let increment = this.angleSpeed-angleSpeed;//加速度增量
                 //console.log("当前加速度",this.angleSpeed,"增量",increment);
                 let target = this.ForceLineObj;
                 target.transform.scale = new Laya.Vector3(1, 1, 1);
-                this.accelerate = false; // 关闭主角加速运动
-                this.whereabouts = true; // 开启下坠
-                if (increment === 0) {
-                    this.parabola.speedX = 2; //水平初速度
-                }
-                else {
-                    this.parabola.speedX = 100 / (increment * 100); //水平初速度
-                    if (this.parabola.speedX >= 10) {
-                        // 最大水平速度
-                        this.parabola.speedX = 5;
-                    }
-                }
-                this.parabola.speedY = -increment * 10; //垂直初速度
-                if (increment * 10 >= 8) {
-                    this.parabola.speedY = -8;
-                }
+                this.accelerate = false; // 关闭圆周运动
+                this.whereabouts = true; // 开启斜抛运动
+                // 清空圆周运动的数据
+                this.Circumferential.angularVelocity = 5; // 角速度
+                this.Circumferential.speed = 1; // 加速度
+                this.Circumferential.time = 0; //时间
+                // if(increment===0){
+                //      this.parabola.speedX = 2;//水平初速度
+                // }else{
+                //      this.parabola.speedX = 100/(increment*100);//水平初速度
+                //      if(this.parabola.speedX >= 10){
+                //          // 最大水平速度
+                //          this.parabola.speedX = 5;
+                //      }
+                // }
+                // this.parabola.speedY = -increment*10;//垂直初速度
+                // if(increment*10>=8){
+                //     this.parabola.speedY = -8;
+                // }
                 //console.log("水平",this.parabola.speedX,"垂直",this.parabola.speedY);
                 // if(this.parabola.speedX>=angleSpeed){
                 //      this.angleSpeed = this.parabola.speedX;
                 // }else{
                 //     this.angleSpeed = angleSpeed;
                 // }
-                this.angleSpeed = angleSpeed;
-                this.ForceLineObj.transform.scale = new Laya.Vector3(1, 1, 1); // 重置缩放
+                //this.angleSpeed = angleSpeed;
+                //this.ForceLineObj.transform.scale = new Laya.Vector3(1,1,1);// 重置着力线缩放
             };
             // 控制着力点
             this.Rend_Circular_point = (pos) => {
@@ -235,6 +261,7 @@ var WetchGame;
             };
             // 绘制着力线
             this.forceLine = () => {
+                this.SlantingThrow.time = 0; // 斜抛运动的时间
                 var LeadPosition = this.Lead_cube.transform.position; // 主角
                 var FoucePosition = this._FocusPoint(LeadPosition); // 着力点
                 this.foucePos = FoucePosition; //当前着力坐标
@@ -243,13 +270,14 @@ var WetchGame;
                 let target_height = TOOLS.getline(FoucePosition, LeadPosition);
                 let target_scale = target_height / CylinderMeshCube.Y;
                 let angleLead = angleData.angleLead;
-                this.angle = angleData.angleLead + 270;
-                this.Circular_point = FoucePosition;
-                this.radius = target_height; // 圆半径
+                //this.angle = angleData.angleLead+270;
+                this.Circumferential.angle = angleData.angleLead + 270;
+                this.Circumferential.Circular_point = FoucePosition;
+                this.Circumferential.radius = target_height; // 圆半径
                 console.log("半径", target_height);
-                if (target_height <= 1) {
-                    this.angleSpeed = 5;
-                }
+                // if(target_height<=1){
+                //     this.angleSpeed = 5;
+                // }
                 target.transform.position = new Laya.Vector3(FoucePosition.x, FoucePosition.y, 0);
                 target.transform.scale = new Laya.Vector3(1, target_scale, 1);
                 target.transform.localRotationEuler = new Laya.Vector3(0, 0, angleLead);
@@ -419,24 +447,41 @@ var WetchGame;
         // 控制主角
         Lead_angle_pos(angle) {
             let before_pos = this.Lead_cube.transform.position;
-            let target_X = this.Circular_point.x + this.radius * Math.cos(this.angle * Math.PI / 180);
-            let target_Y = this.Circular_point.y + this.radius * Math.sin(this.angle * Math.PI / 180);
+            let target_X = this.Circumferential.Circular_point.x + this.Circumferential.radius * Math.cos(this.Circumferential.angle * Math.PI / 180);
+            let target_Y = this.Circumferential.Circular_point.y + this.Circumferential.radius * Math.sin(this.Circumferential.angle * Math.PI / 180);
             this.Lead_cube.transform.position = new Laya.Vector3(target_X, target_Y, 0);
             return { x: target_X - before_pos.x, y: target_Y - before_pos.y };
         }
-        // 主角抛物线运动 
-        Lead_animate() {
-            let t = 15; //每帧时间
-            var distanceX = (this.parabola.speedX * t) / 1000; // 水平路程
-            this.parabola.speedY += this.parabola.gravity * t; // 加上重力加速度后的垂直速度
-            let h = (this.parabola.speedY * t) / 1000; //垂直路程
-            if (this.parabola.speedY >= 10) {
-                // 关闭下坠
-                this.whereabouts = false;
-                console.log("结束下坠");
-            }
-            this.camera.transform.translate(new Laya.Vector3(distanceX, -h, 0), false);
-            this.Lead_cube.transform.translate(new Laya.Vector3(distanceX, -h, 0));
+        // // 主角抛物线运动 
+        // private Lead_animate(){
+        //     let t:number = 15;//每帧时间
+        //     var distanceX=(this.parabola.speedX*t)/1000;// 水平路程
+        //     this.parabola.speedY+=this.parabola.gravity*t;// 加上重力加速度后的垂直速度
+        //     let h = (this.parabola.speedY*t)/1000;//垂直路程
+        //     if(this.parabola.speedY>=10){
+        //         // 关闭下坠
+        //         this.whereabouts = false;
+        //         console.log("结束下坠");
+        //     }
+        //     this.camera.transform.translate(new Laya.Vector3(distanceX,-h,0),false);
+        //     this.Lead_cube.transform.translate(new Laya.Vector3( distanceX,-h,0));
+        // }
+        /**
+         *
+         * 运动函数
+         *
+         */
+        // 圆周运动
+        circularMotion() {
+        }
+        // 斜抛运动
+        SlantingMotion(angle, time, speed, scale = 1) {
+            let X, Y;
+            X = speed * Math.cos(angle * Math.PI / 180) * time; // 水平距离
+            Y = speed * Math.sin(angle * Math.PI / 180) * time - (this.SlantingThrow.gravity * (time * time)) / 2; // 垂直距离
+            X = X * scale;
+            Y = Y * scale;
+            return { X, Y };
         }
         /**
          *
@@ -446,41 +491,50 @@ var WetchGame;
         updata() {
             let self = this;
             Laya.timer.frameLoop(1, this, () => {
-                //主角加速
+                // 圆周运动 匀变速运动
                 if (self.accelerate) {
-                    let office = self.Lead_angle_pos(self.angle); //移动主角
-                    self.FoceAnimation(); //重绘着力线
-                    self.angle += self.angleSpeed;
-                    self.angleSpeed += 0.01;
-                    if (self.angleSpeed >= 3) {
-                        self.angleSpeed = 3;
-                    }
+                    let office = self.Lead_angle_pos(self.Circumferential.angle); //移动主角
+                    self.FoceAnimation(); // 着力线
+                    self.Circumferential.time += (Laya.timer.delta / 1000); // 计算时间
+                    self.Circumferential.angle += self.Circumferential.time * self.Circumferential.angularVelocity; // 计算角度
+                    self.Circumferential.angularVelocity += self.Circumferential.increment; // 计算加速度
+                    // self.Circumferential.angle+=self.angleSpeed;
+                    // self.angleSpeed+=0.01;
+                    // if(self.angleSpeed>=3){
+                    //     self.angleSpeed = 3;
+                    // }
                     self.camera.transform.translate(new Laya.Vector3(office.x, office.y, 0), false);
                 }
-                //主角下坠
+                // 斜抛运动
                 if (self.whereabouts) {
-                    self.Lead_animate();
+                    let _ = self.SlantingMotion(self.SlantingThrow.angle, self.SlantingThrow.time, self.SlantingThrow.v0, 0.02);
+                    self.SlantingThrow.time += (Laya.timer.delta / 1000);
+                    if (_.Y <= -1) {
+                        self.whereabouts = false;
+                    }
+                    this.camera.transform.translate(new Laya.Vector3(_.X, _.Y, 0), false);
+                    this.Lead_cube.transform.translate(new Laya.Vector3(_.X, _.Y, 0));
                 }
-                // 主角循环运动控制
+                // 单摆运动
                 if (self.LeadLoop) {
-                    if (self.angle >= 310) {
+                    if (self.Circumferential.angle >= 310) {
                         self.Leaddirection = false;
                     }
-                    else if (self.angle <= 230) {
+                    else if (self.Circumferential.angle <= 230) {
                         self.Leaddirection = true;
                     }
                     ;
                     if (self.Leaddirection) {
                         // 顺时针
-                        self.angle++;
+                        self.Circumferential.angle++;
                         self.FoceAnimation();
                     }
                     else {
                         // 逆时针
-                        self.angle--;
+                        self.Circumferential.angle--;
                         self.FoceAnimation();
                     }
-                    self.Lead_angle_pos(self.angle); // 改变主角位置
+                    self.Lead_angle_pos(self.Circumferential.angle); // 改变主角位置
                 }
             });
         }
@@ -495,7 +549,7 @@ var WetchGame;
             window["camera"] = this.camera; // 摄像机
             window["foce"] = this.ForceLineObj; //着力线
             window["focepoivet"] = this.Circular_obj; // 着力点
-            window["parabola"] = this.parabola; //抛物配置
+            //window["parabola"]= this.parabola;//抛物配置
             window["directionLight"] = this.directionLight; //灯光
             window["scene2D"] = this.scene2D; //2d场景
         }
