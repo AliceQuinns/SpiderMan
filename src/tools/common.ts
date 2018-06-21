@@ -10,6 +10,8 @@ let GLOB_Circumferential={
     speed: 0.001,// 加速度
     increment: 0.0001,// 加速度增量
 }
+/* 服务器地址 */
+let SERVERURL:string = ""; 
 /* 立方体贴图 */
 let cubeTexture = [
     [
@@ -90,4 +92,32 @@ var TOOLS = {
             return value*(Math.PI/180);
         }
     },
+    // AJAX
+    Ajax: (request)=>{
+        return new Promise((resolve,reject)=>{
+            let ajax = new XMLHttpRequest();
+            ajax.open('GET',request,true);
+            ajax.onreadystatechange=()=>{
+                if(ajax.readyState===4){
+                    if(ajax.status===200){
+                        resolve(ajax.response);
+                    }else{
+                        reject(this.response);
+                    }
+                }
+            }
+            ajax.send();
+        })
+    },
+}
+
+/**
+ * 
+ *  服务器对接数据格式
+ * 
+ */
+
+let data = {
+    Checkpoint: 1,
+    data: {}
 }

@@ -10,7 +10,7 @@ var WetchGame;
         constructor() {
             this.Cube_number = 0; // 位置
             this.Router_game = null; // 游戏的路由表
-            this.cube_bg_type = true; // 贴图
+            this.cube_bg_type = true; // 贴图控制
             this.Lead_cube = null; // 主角模型
             this.Circular_obj = null; // 着力点对象
             this.FourcePointRouter = []; //着力点路由表
@@ -42,14 +42,24 @@ var WetchGame;
              *  main
              *
              */
+            /* 远程获取Router表 */
             this.Main2D = () => {
-                /* 读取Router表 加载3d场景 */
-                Laya.loader.load("res/router/Router.json", Laya.Handler.create(this, this.Main3D), null, Laya.Loader.JSON);
+                let data = this.configure(); //请求数据
+                if (data.status) {
+                    console.log("请求配置表成功");
+                    this.Router_game = data.data;
+                    this.Main3D();
+                }
+                else {
+                    Laya.loader.load("res/router/Router.json", Laya.Handler.create(this, () => {
+                        this.Router_game = Laya.Loader.getRes('res/router/Router.json').data;
+                        this.Main3D();
+                    }));
+                }
             };
+            /* 绘制3D场景 */
             this.Main3D = () => {
                 let self = this;
-                /* 保存数据 */
-                self.Router_game = Laya.Loader.getRes('res/router/Router.json').data;
                 /* 绘制3D场景 */
                 self.initScene();
                 /* 渲染初始立方体 */
@@ -282,7 +292,7 @@ var WetchGame;
                 box.meshRender.material = material;
                 box.transform.position = new Laya.Vector3(0, 0, 0);
                 this.Circular_obj = box;
-                console.log(this.FourcePointRouter);
+                //console.log(this.FourcePointRouter);
             };
             /**
              *
@@ -308,27 +318,53 @@ var WetchGame;
             };
             /**
              *
-             * 立方体生成与配置表解析
+             *  1.立方体生成
+             *  2.配置表解析
              *
              */
-            // 方块创建入口 参数>=2 且为2的倍数
+            // 配置表获取
+            this.configure = () => {
+                let _ = { data: null, status: null };
+                if (!!SERVERURL || !!window["SERVERURL"]) {
+                    var data = TOOLS.Ajax(SERVERURL);
+                    data.then(res => {
+                        _.data = res;
+                        _.status = true;
+                    }).catch(err => {
+                        _.status = false;
+                    });
+                }
+                else {
+                    _.status = false;
+                }
+                ;
+                return _; // 返回状态
+            };
+            // 立方体生成入口 参数>=2 且为2的倍数
             this.RenderCube = (size) => {
                 let self = this;
                 for (let i = size; i--;) {
-                    if (self.Router_game[self.Cube_number].c_type == "0") {
-                        console.log(self.Cube_number, "无配置");
-                        (self.Cube_number % 2 === 0) ? self.Cube_number = 1 : self.Cube_number = 0;
+                    if (self.Router_game[self.Cube_number].c_type == "0" || self.Cube_number >= self.Router_game.length) {
+                        /* 配置读取完毕 */
+                        console.log(self.Cube_number, "配置读取完毕");
+                        //(self.Cube_number%2===0)?self.Cube_number=1:self.Cube_number=0;
+                        // 重新请求路线表
+                        if ((self.configure()).status) {
+                        }
+                        else {
+                        }
                     }
-                    ;
-                    (self.Cube_number % 2 === 0)
-                        ?
-                            self.AddBox(0, self.Cube_number) // 偶数在下
-                        :
-                            self.AddBox(1, self.Cube_number); // 奇数在上
-                    self.Cube_number++;
+                    else {
+                        (self.Cube_number % 2 === 0)
+                            ?
+                                self.AddBox(0, self.Cube_number) // 偶数在下
+                            :
+                                self.AddBox(1, self.Cube_number); // 奇数在上
+                        self.Cube_number++;
+                    }
                 }
             };
-            // 创建立方体方块
+            // 创建立方体
             this.AddBox = (type = null, index) => {
                 let box = TOOLS.pullCube({ Checkpoint: 0, imgType: (this.cube_bg_type) ? 0 : 1 }); //从对象池请求立方体
                 this.Game_scene.addChild(box); //添加立方体
@@ -369,18 +405,17 @@ var WetchGame;
                 material.diffuseTexture = Laya.Texture2D.load("res/image/color/bgd_1.png");
                 target_cube.meshRender.material = material;
                 target_cube.transform.position = new Laya.Vector3(0.8, 7, 0);
-                /* 添加圆形碰撞器 */
-                let spherecollider = target_cube.addComponent(Laya.SphereCollider);
-                /* 设置球形碰撞器中心位置 */
-                spherecollider.center = target_cube.meshFilter.sharedMesh.boundingSphere.center.clone();
-                /* 设置球形碰撞器半径 */
-                spherecollider.radius = target_cube.meshFilter.sharedMesh.boundingSphere.radius;
+                // /* 添加圆形碰撞器 */
+                // let spherecollider:Laya.SphereCollider = target_cube.addComponent(Laya.SphereCollider) as Laya.SphereCollider;
+                // /* 设置球形碰撞器中心位置 */
+                // spherecollider.center = target_cube.meshFilter.sharedMesh.boundingSphere.center.clone();
+                // /* 设置球形碰撞器半径 */
+                // spherecollider.radius = target_cube.meshFilter.sharedMesh.boundingSphere.radius;
                 this.Lead_cube = target_cube;
             };
             /* 加载2d资源 */
             Laya.loader.load([
-                "res/atlas/index.atlas",
-                "res/bitmapFont/fonta.fnt",
+                "res/atlas/index.atlas"
             ], Laya.Handler.create(this, this.Main2D));
         }
         // 坐标象限
@@ -431,6 +466,11 @@ var WetchGame;
             Y = Y * scale;
             return { X, Y };
         }
+        /**
+         *
+         *  碰撞检测
+         *
+         */
         /**
          *
          *  updata
@@ -496,10 +536,10 @@ var WetchGame;
             window["camera"] = this.camera; // 摄像机
             window["foce"] = this.ForceLineObj; //着力线
             window["focepoivet"] = this.Circular_obj; // 着力点
-            //window["parabola"]= this.parabola;//抛物配置
             window["directionLight"] = this.directionLight; //灯光
             window["scene2D"] = this.scene2D; //2d场景
             window["move"] = this.SlantingMotion; //斜抛算法
+            window["add"] = this.RenderCube; // 方块生成
         }
     }
     WetchGame.gameScene = gameScene;
