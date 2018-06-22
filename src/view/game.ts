@@ -22,6 +22,8 @@ module WetchGame{
         private accelerate:boolean=false;// 圆周运动开关
         private whereabouts:boolean=false;// 斜抛运动开关
         private LeadLoop:boolean=true;// 单摆运动开关
+        private collision:boolean=false;//碰撞检测开关
+        private eventControl:boolean=true;//事件控制开关
         private foucePos:any;//着力点坐标
         private Leaddirection:boolean = true;// 单摆运动方向控制
         private Score:Laya.Text;// 分数节点
@@ -82,7 +84,7 @@ private Main3D=()=>{
     /* 绘制3D场景 */
     self.initScene();
     /* 渲染初始立方体 */
-    self.RenderCube(30);
+    self.RenderCube(20);
     /* 创建主角 */
     self.Lead();
     /* 初始化着力点 */ 
@@ -120,6 +122,7 @@ private startGame=()=>{
         this.ForceLineMain("end");// 回收着力线
         this.eventSwitch();// 开启游戏控制
         this.scene2D.removeChildren();// 删除2D场景全部子节点
+        this.collision = true;//开启碰撞检测
         //this.camera.transform.position = 
     });
 }
@@ -191,12 +194,21 @@ private initScene = ()=>{
     directionLight.direction = new Laya.Vector3(2,-2,-5);
     this.directionLight = directionLight;
 
-    //添加背景图
+    //添加地板
+    var box: Laya.MeshSprite3D = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(50, 50, 0.001))) as Laya.MeshSprite3D;
+    var material: Laya.StandardMaterial = new Laya.StandardMaterial();
+    material.diffuseTexture = Laya.Texture2D.load("res/image/color/floor.png");
+    box.meshRender.material = material;
+    box.transform.position=new Laya.Vector3(1,1,1);
+
+    // 左背景
     var box: Laya.MeshSprite3D = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(50, 0.001, 50))) as Laya.MeshSprite3D;
     var material: Laya.StandardMaterial = new Laya.StandardMaterial();
-    material.diffuseTexture = Laya.Texture2D.load("res/image/color/backgroud.png");
+    material.diffuseTexture = Laya.Texture2D.load("res/image/color/Backgroundmap.png");
     box.meshRender.material = material;
-    box.transform.position=new Laya.Vector3(0,5,-1);
+    Laya.stage._childs[0]._childs[3].transform.position = new Laya.Vector3(25,18,-50)
+
+    // 右背景
 }
 
 /**
@@ -207,15 +219,16 @@ private initScene = ()=>{
 private eventSwitch=()=>{
     // 鼠标按下
     Laya.stage.on(Laya.Event.MOUSE_DOWN,this,()=>{
-        // if(this.FourcePointRouter.length-this.FoucePointIndex<=2){
-        //     console.log("创建方块");
-        //      this.RenderCube(30);// 创建方块
-        // }
-        this.ForceLineMain("start");//绘制着力线
+        if(this.eventControl){
+            //this.cubeconfig();//创建方块
+            this.ForceLineMain("start");//绘制着力线
+        }
     });
     // 鼠标松开
     Laya.stage.on(Laya.Event.MOUSE_UP,this,()=>{
-        this.ForceLineMain("end");//回收着力线
+        if(this.eventControl){
+            this.ForceLineMain("end");//回收着力线
+        }
     });
 }
 
@@ -232,7 +245,7 @@ private ForceLineMain = (status:any)=>{
         let target = TOOLS.getCylinderMesh(0);
         this.Game_scene.addChild(target);
         this.ForceLineObj = target;
-        target.transform.pivot = new Laya.Vector3(0,0.05,0);
+        target.transform.pivot = new Laya.Vector3(0,CylinderMeshCube.Y/2,0);
         this.forceLine();
         this.accelerate = this.whereabouts = false;
     }else if(status === "start"){
@@ -252,7 +265,7 @@ private deleteFoce=()=>{
     this.SlantingThrow.v0 = this.Circumferential.angularVelocity*this.Circumferential.radius;// 线速度
     let angle = 90-(360-(this.Circumferential.angle-Math.round(this.Circumferential.angle/360)*360));// 斜抛角度
     this.SlantingThrow.angle = angle;// 斜抛角度
-    console.log("斜抛角度为",angle,"线速度为",this.SlantingThrow.v0);
+    //console.log("斜抛角度为",angle,"线速度为",this.SlantingThrow.v0);
     let target = this.ForceLineObj;
     target.transform.scale = new Laya.Vector3(1,1,1);
     this.accelerate = false; // 关闭圆周运动
@@ -336,8 +349,8 @@ private _quadrant(LeadPosition,FoucePosition){
 }
 
 //  连接主角
-private FoceAnimation = ()=>{
-    let LeadPosition = this.Lead_cube.transform.position;// 主角坐标
+private FoceAnimation = (pos)=>{
+    let LeadPosition = pos;// 主角坐标
     let FoucePosition = this.foucePos;// 着力点坐标
     let angleLead = this._quadrant(LeadPosition,FoucePosition).angleLead;// 计算角度
     this.ForceLineObj.transform.localRotationEuler = new Laya.Vector3(0,0,angleLead);
@@ -384,7 +397,22 @@ private cameraAnimation = (call):void=>{
  * 
  */
 
-// 配置表获取
+// 方块创建
+private cubeconfig = ()=>{
+    if(this.FourcePointRouter.length-this.FoucePointIndex<=5){
+        this.RenderCube(100);// 创建方块
+        this.cuberecovery(80);// 回收方块
+    }
+}
+
+// 方块回收
+private cuberecovery = (size)=>{
+    for(let i = size;i--;){
+        TOOLS.pushCube("cube",Laya.stage._childs[0]._childs[i+3],true);
+    }   
+}
+
+// 远程配置表管理
 private configure = ()=>{
     let _ = {data:null,status:null};
     if(!!SERVERURL||!!window["SERVERURL"]){
@@ -401,11 +429,12 @@ private configure = ()=>{
     return _;// 返回状态
 }
 
-// 立方体生成入口 参数>=2 且为2的倍数
+// 立方体生成
 private RenderCube = (size:number):void=>{
     let self = this;
+    console.log(self.Cube_number);
     for(let i=size;i--;){
-        if(self.Router_game[self.Cube_number].c_type=="0"||self.Cube_number>=self.Router_game.length){
+        if(self.Cube_number>=self.Router_game.length||!self.Router_game[self.Cube_number]){
             /* 配置读取完毕 */ 
             console.log(self.Cube_number,"配置读取完毕");
             let data = this.configure();
@@ -416,6 +445,7 @@ private RenderCube = (size:number):void=>{
                 // 合并本地数据
                 this.Router_game = this.Router_game.concat(this.Router_game);
             }
+            this.RenderCube(i);
         }else{
             (self.Cube_number%2 === 0)
             ?
@@ -427,7 +457,7 @@ private RenderCube = (size:number):void=>{
     }
 }
 
-// 创建立方体
+// 单个立方体
 private AddBox = (type:number=null,index:number)=>{
     let box = TOOLS.pullCube({Checkpoint:0,imgType:(this.cube_bg_type)?0:1});//从对象池请求立方体
     this.Game_scene.addChild(box);//添加立方体
@@ -463,9 +493,9 @@ private AddBox = (type:number=null,index:number)=>{
 
 // 创建主角
 private Lead = ()=>{
-    let target_cube = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.SphereMesh(0.1, 8, 8))) as Laya.MeshSprite3D;
+    let target_cube = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.SphereMesh(0.2, 8, 8))) as Laya.MeshSprite3D;
     var material: Laya.StandardMaterial = new Laya.StandardMaterial();
-    material.diffuseTexture = Laya.Texture2D.load("res/image/color/bgd_1.png");
+    material.diffuseTexture = Laya.Texture2D.load("res/image/color/Football.png");
     target_cube.meshRender.material = material;
     target_cube.transform.position = new Laya.Vector3(0.8,7,0);
     // /* 添加圆形碰撞器 */
@@ -485,12 +515,12 @@ private Lead = ()=>{
  */
 
 // 圆周运动
-private circularMotion(angle){
-    let before_pos = this.Lead_cube.transform.position; 
+private circularMotion(angle,pos){
+    let before_pos = pos; 
     let target_X = this.Circumferential.Circular_point.x + this.Circumferential.radius * Math.cos(this.Circumferential.angle*Math.PI/180);
     let target_Y = this.Circumferential.Circular_point.y + this.Circumferential.radius * Math.sin(this.Circumferential.angle*Math.PI/180);
     this.Lead_cube.transform.position = new Laya.Vector3(target_X,target_Y,0);
-    return {x: target_X-before_pos.x,y:target_Y-before_pos.y};
+    return {x: target_X-before_pos.x,y:target_Y-before_pos.y,pos:{x:target_X,y:target_Y}};
 }
 
 // 斜抛运动
@@ -508,6 +538,27 @@ private SlantingMotion(angle:number,time:number,speed:number,scale:number=1){
  * 
  */
 
+private collisionDetection(pos){
+    let i = Math.round(pos.x/CubeSize.X);
+    if(i<=0)i = 1;
+    let top = 2*i-1;//上方数据索引
+    let bottom = top-1;//下方数据索引
+    let max = Number(this.Router_game[top].hp);// 上部数据
+    let min = Number(this.Router_game[bottom].hp);// 下部数据
+    let toppos = new Laya.Vector3(0,CubeSize.Z+max+((CubeSize.Z/2)+min),0);
+    let bottompos = new Laya.Vector3(0,(CubeSize.Z/2)+min,0);
+    let max_height = toppos.y-(CubeSize.Z/2);// 最高高度 上部
+    let min_height = bottompos.y+(CubeSize.Z/2);// 最低高度 下部
+    if(pos.y>=max_height||pos.y<=min_height){
+        console.log(`第${i}个    ${top}    ${bottom}  ${toppos}   ${bottompos}`);
+        // 结束游戏
+        this.accelerate = false;// 关闭圆周运动
+        this.whereabouts = false;// 关闭斜抛运动
+        this.collision = false;// 关闭碰撞检测
+        this.eventControl = false;// 关闭事件监听
+    }
+}
+
 /**
  * 
  *  updata
@@ -516,15 +567,14 @@ private SlantingMotion(angle:number,time:number,speed:number,scale:number=1){
 private updata(){
     let self = this;
     Laya.timer.frameLoop(1,this,()=>{
+        // 主角位置
+        let pos = this.Lead_cube.transform.position;
         // 圆周运动
         if(self.accelerate){
-            let office = self.circularMotion(self.Circumferential.angle);// 根据角度移动主角
-            self.FoceAnimation();// 绘制着力线
-            //self.Circumferential.time += (Laya.timer.delta/1000);// 计算时间
+            let office = self.circularMotion(self.Circumferential.angle,pos);// 根据角度移动主角
+            self.FoceAnimation(office.pos);// 绘制着力线
             self.Circumferential.angle += ((Laya.timer.delta/1000*self.Circumferential.angularVelocity)*180/Math.PI);// 计算角度
-            //console.log("当前角度",self.Circumferential.angle);
             self.Circumferential.angularVelocity+=self.Circumferential.speed;// 递增角速度
-            //self.Circumferential.speed+=self.Circumferential.increment;// 递增加速度
             self.camera.transform.translate(new Laya.Vector3(office.x,office.y,0),false);
         }
         // 斜抛运动
@@ -536,12 +586,8 @@ private updata(){
                 1
             );
             self.SlantingThrow.time+=(Laya.timer.delta/1000);
-            if(_.Y<=-2){
-                self.whereabouts = false;
-            }
             let vect3 = new Laya.Vector3(this.SlantingThrow.pos.x+_.X,this.SlantingThrow.pos.y+_.Y,0);// 位移向量
-            let Leadpos = this.Lead_cube.transform.position;// 主角当前位置
-            this.camera.transform.translate(new Laya.Vector3(vect3.x-Leadpos.x,vect3.y-Leadpos.y),false);
+            this.camera.transform.translate(new Laya.Vector3(vect3.x-pos.x,vect3.y-pos.y),false);
             this.Lead_cube.transform.position=vect3;
         }
         // 单摆运动
@@ -554,14 +600,19 @@ private updata(){
             if(self.Leaddirection){
                 // 顺时针
                 self.Circumferential.angle++;
-                self.FoceAnimation();
             }else{
                 // 逆时针
                 self.Circumferential.angle--;
-                self.FoceAnimation();
             }
-            self.circularMotion(self.Circumferential.angle);// 改变主角位置
+            let office =  self.circularMotion(self.Circumferential.angle,pos);// 改变主角位置
+            self.FoceAnimation(office.pos);
         }
+        // 碰撞检测
+        if(self.collision){
+            this.collisionDetection(pos);
+        }   
+        // 主角动画
+        this.Lead_cube.transform.rotate(new Laya.Vector3(.1,.1,.1))
     })
 }
 

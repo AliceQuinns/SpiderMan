@@ -3,7 +3,7 @@ let VIEW = null;
 /* 默认立方体的尺寸 */
 let CubeSize = { X: 0.8, Y: 0.5, Z: 5 };
 /* 初始着力线的尺寸 */
-let CylinderMeshCube = { X: .02, Y: 0.1, Z: 8 };
+let CylinderMeshCube = { X: .01, Y: 0.01, Z: 8 };
 /* 圆周运动参数 */
 let GLOB_Circumferential = {
     angularVelocity: 0.001,
@@ -15,8 +15,8 @@ let SERVERURL = "";
 /* 立方体贴图 */
 let cubeTexture = [
     [
-        "res/image/color/bgc_1.png",
-        "res/image/color/bgc_2.png"
+        "res/image/color/Grassland_1.png",
+        "res/image/color/Grassland_2.png"
     ]
 ];
 /* 圆柱体贴图 */
@@ -36,18 +36,24 @@ var TOOLS = {
         VIEW = new scene(arg);
     },
     // 获取立方体
-    pullCube: (texture) => {
-        let cube = Laya.Pool.getItemByCreateFun("cube", () => {
+    pullCube: (texture, pool = false) => {
+        if (pool) {
+            let cube = Laya.Pool.getItemByCreateFun("cube", () => {
+                var box = new Laya.MeshSprite3D(new Laya.BoxMesh(CubeSize.X, CubeSize.Y, CubeSize.Z));
+                var material = new Laya.StandardMaterial();
+                material.diffuseTexture = Laya.Texture2D.load(cubeTexture[texture.Checkpoint][texture.imgType]);
+                box.meshRender.material = material;
+                return box;
+            });
+            return cube;
+        }
+        else {
             var box = new Laya.MeshSprite3D(new Laya.BoxMesh(CubeSize.X, CubeSize.Y, CubeSize.Z));
             var material = new Laya.StandardMaterial();
             material.diffuseTexture = Laya.Texture2D.load(cubeTexture[texture.Checkpoint][texture.imgType]);
             box.meshRender.material = material;
-            /* 添加盒碰撞组件 */
-            var boxCollider = box.addComponent(Laya.BoxCollider);
-            boxCollider.setFromBoundBox(box.meshFilter.sharedMesh.boundingBox);
             return box;
-        });
-        return cube;
+        }
     },
     // 获取圆柱体
     getCylinderMesh: (texture) => {
@@ -61,9 +67,14 @@ var TOOLS = {
         return cube;
     },
     // 对象池回收
-    pushCube: (type, target) => {
-        Laya.stage.removeChild(target);
-        Laya.Pool.recover(type, target);
+    pushCube: (type, target, delet = false) => {
+        if (delet) {
+            target.destroy();
+        }
+        else {
+            Laya.stage.removeChild(target);
+            Laya.Pool.recover(type, target);
+        }
     },
     // 获取两个坐标间的距离
     getline: (coordinateA, coordinateB) => {
@@ -111,6 +122,8 @@ var TOOLS = {
         });
     },
 };
+/* 音频管理 */
+let AUDIO = {};
 /**
  *
  *  服务器对接数据格式
