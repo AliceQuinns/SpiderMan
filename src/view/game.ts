@@ -103,6 +103,8 @@ private Main3D=()=>{
         this.animation2D();// 字体动画
         this.startGame();// 开始游戏按钮
     });
+    /* 播放背景音乐 */
+    AUDIO.play((TOOLS.getRandomInt(2,0)?"bg_1":"bg_2")) 
 }
 
 
@@ -123,7 +125,10 @@ private startGame=()=>{
         this.eventSwitch();// 开启游戏控制
         this.scene2D.removeChildren();// 删除2D场景全部子节点
         this.collision = true;//开启碰撞检测
-        //this.camera.transform.position = 
+        let leadpos = new Laya.Vector3(0.8,7,0);
+        let pos = this.Lead_cube.transform.position;
+        let offic = new Laya.Vector3(pos.x-leadpos.x,pos.y-leadpos.y,0);
+        this.camera.transform.translate(offic);
     });
 }
 
@@ -191,24 +196,36 @@ private initScene = ()=>{
 
     //平行光
     var directionLight: Laya.DirectionLight = scene.addChild(new Laya.DirectionLight()) as Laya.DirectionLight;
-    directionLight.direction = new Laya.Vector3(2,-2,-5);
+    directionLight.direction = new Laya.Vector3(2,-2,-3);
     this.directionLight = directionLight;
 
     //添加地板
-    var box: Laya.MeshSprite3D = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(50, 50, 0.001))) as Laya.MeshSprite3D;
+    var bottombox: Laya.MeshSprite3D = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(30, 50, 0.001))) as Laya.MeshSprite3D;
     var material: Laya.StandardMaterial = new Laya.StandardMaterial();
     material.diffuseTexture = Laya.Texture2D.load("res/image/color/floor.png");
-    box.meshRender.material = material;
-    box.transform.position=new Laya.Vector3(1,1,1);
+    bottombox.meshRender.material = material;
+    bottombox.transform.position=new Laya.Vector3(5,0,-10);
+    bottombox.transform.localRotationEuler = new Laya.Vector3(0,0,0);
 
-    // 左背景
-    var box: Laya.MeshSprite3D = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(50, 0.001, 50))) as Laya.MeshSprite3D;
+    // 前部背景
+    var Front: Laya.MeshSprite3D = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(30, 0.001, 30))) as Laya.MeshSprite3D;
     var material: Laya.StandardMaterial = new Laya.StandardMaterial();
     material.diffuseTexture = Laya.Texture2D.load("res/image/color/Backgroundmap.png");
-    box.meshRender.material = material;
-    Laya.stage._childs[0]._childs[3].transform.position = new Laya.Vector3(25,18,-50)
+    Front.meshRender.material = material;
+    Front.transform.localRotationEuler = bottombox.transform.localRotationEuler;
+    Front.transform.position = new Laya.Vector3(5,15,-35);
 
-    // 右背景
+    // 右部背景
+    var rightbox: Laya.MeshSprite3D = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(0.001, 50, 30))) as Laya.MeshSprite3D;
+    var material: Laya.StandardMaterial = new Laya.StandardMaterial();
+    material.diffuseTexture = Laya.Texture2D.load("res/image/color/Backgroundmap.png");
+    rightbox.meshRender.material = material;
+    rightbox.transform.localRotationEuler = bottombox.transform.localRotationEuler;
+    rightbox.transform.position = new Laya.Vector3(20,15,-10);
+
+    window["Front"] = Front;
+    window["bottombox"] = bottombox;
+    window["rightbox"] = rightbox;
 }
 
 /**
@@ -246,7 +263,7 @@ private ForceLineMain = (status:any)=>{
         this.Game_scene.addChild(target);
         this.ForceLineObj = target;
         target.transform.pivot = new Laya.Vector3(0,CylinderMeshCube.Y/2,0);
-        this.forceLine();
+        this.forceLine();   
         this.accelerate = this.whereabouts = false;
     }else if(status === "start"){
         this.forceLine();
@@ -493,18 +510,13 @@ private AddBox = (type:number=null,index:number)=>{
 
 // 创建主角
 private Lead = ()=>{
-    let target_cube = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.SphereMesh(0.2, 8, 8))) as Laya.MeshSprite3D;
+    let target_cube = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.SphereMesh(0.15, 8, 8))) as Laya.MeshSprite3D;
     var material: Laya.StandardMaterial = new Laya.StandardMaterial();
     material.diffuseTexture = Laya.Texture2D.load("res/image/color/Football.png");
     target_cube.meshRender.material = material;
     target_cube.transform.position = new Laya.Vector3(0.8,7,0);
-    // /* 添加圆形碰撞器 */
-    // let spherecollider:Laya.SphereCollider = target_cube.addComponent(Laya.SphereCollider) as Laya.SphereCollider;
-    // /* 设置球形碰撞器中心位置 */
-    // spherecollider.center = target_cube.meshFilter.sharedMesh.boundingSphere.center.clone();
-    // /* 设置球形碰撞器半径 */
-    // spherecollider.radius = target_cube.meshFilter.sharedMesh.boundingSphere.radius;
-
+    // material.albedo=new Laya.Vector4(1,1,2,0.3);
+    // material.renderMode = Laya.StandardMaterial.RENDERMODE_DEPTHREAD_TRANSPARENTDOUBLEFACE;
     this.Lead_cube = target_cube;
 }
 

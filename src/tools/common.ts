@@ -15,8 +15,8 @@ let SERVERURL:string = "";
 /* 立方体贴图 */
 let cubeTexture = [
     [
-        "res/image/color/Grassland_1.png",
-        "res/image/color/Grassland_2.png"
+        "res/image/color/stone.jpg",
+        "res/image/color/stone2.jpg"
     ]
 ]
 /* 圆柱体贴图 */
@@ -61,6 +61,8 @@ var TOOLS = {
             var box: Laya.MeshSprite3D = new Laya.MeshSprite3D(new Laya.CylinderMesh(CylinderMeshCube.X, CylinderMeshCube.Y, CylinderMeshCube.Z)) as Laya.MeshSprite3D;
             var material: Laya.StandardMaterial = new Laya.StandardMaterial();
             material.diffuseTexture = Laya.Texture2D.load(CylinderMeshTexture[texture]);
+            material.albedo=new Laya.Vector4(1,1,2,0.3);
+            material.renderMode = Laya.StandardMaterial.RENDERMODE_DEPTHREAD_TRANSPARENTDOUBLEFACE;
             box.meshRender.material = material;
             return box;
         });
@@ -118,11 +120,34 @@ var TOOLS = {
             ajax.send();
         })
     },
+    // 随机算法
+    getRandomInt: function(min,max){
+        return Math.floor(Math.random()*(max-min)+min);
+    },
 }
 
 /* 音频管理 */
 let AUDIO = {
-    
+    play: (type)=>{
+        let url = null,audio_type = "Musice";
+        switch(type)
+        {
+            case "bg_1":
+                url = "res/audio/01.mp3";
+                break;
+            case "bg_2": 
+                url = "res/audio/02.mp3";
+                break;
+        };
+        if(audio_type==="Musice"){
+            Laya.SoundManager.playMusic(url,0);// 音乐
+        }else{
+            Laya.SoundManager.playSound(url,1);// 音效
+        }
+    },
+    stop: (url)=>{
+        Laya.SoundManager.stopSound(url);
+    }
 }
 
 /**
