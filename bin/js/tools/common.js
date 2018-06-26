@@ -26,7 +26,7 @@ let CylinderMeshTexture = [
 ];
 /* 着力点贴图 */
 let Circular_point_texture = [
-    "res/image/color/bgc_1.png"
+    "res/image/color/bga_1.png"
 ];
 var TOOLS = {
     // 切换场景并清空上级场景

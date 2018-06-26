@@ -28,6 +28,7 @@ module WetchGame{
         private Leaddirection:boolean = true;// 单摆运动方向控制
         private Score:Laya.Text;// 分数节点
         private fonttext;// 位图字体
+        private pollctr:number=0;//控制方块的生成
         // 圆周运动
         private Circumferential:any={
             angularVelocity: GLOB_Circumferential.angularVelocity,// 角速度
@@ -40,7 +41,7 @@ module WetchGame{
         // 斜抛运动
         private SlantingThrow:any={
             pos: null,// 主角坐标
-            gravity: 10,// 重力
+            gravity: 7,// 重力
             v0: 5, // 初速度
             acceleration: 0, // 加速度
             angle: 45,// 角度
@@ -83,14 +84,16 @@ private Main3D=()=>{
     let self = this;
     /* 绘制3D场景 */
     self.initScene();
-    /* 渲染初始立方体 */
-    self.RenderCube(20);
     /* 创建主角 */
     self.Lead();
     /* 初始化着力点 */ 
     self.Circular_point_obj();
     /* 初始着力线 */
     self.ForceLineMain("init");
+    /* 渲染初始立方体 */
+    self.RenderCube(20);
+    /* 渲染第一条着力线 */
+    self.forceLine();
     /* update */
     self.updata();
     /* 全局对象 */
@@ -105,6 +108,8 @@ private Main3D=()=>{
     });
     /* 播放背景音乐 */
     AUDIO.play((TOOLS.getRandomInt(2,0)?"bg_1":"bg_2")) 
+    /* 关闭全部运动 */
+    this.accelerate = this.whereabouts = false; 
 }
 
 
@@ -237,7 +242,6 @@ private eventSwitch=()=>{
     // 鼠标按下
     Laya.stage.on(Laya.Event.MOUSE_DOWN,this,()=>{
         if(this.eventControl){
-            //this.cubeconfig();//创建方块
             this.ForceLineMain("start");//绘制着力线
         }
     });
@@ -263,7 +267,6 @@ private ForceLineMain = (status:any)=>{
         this.Game_scene.addChild(target);
         this.ForceLineObj = target;
         target.transform.pivot = new Laya.Vector3(0,CylinderMeshCube.Y/2,0);
-        this.forceLine();   
         this.accelerate = this.whereabouts = false;
     }else if(status === "start"){
         this.forceLine();
@@ -298,6 +301,7 @@ private Rend_Circular_point=(pos)=>{
 
 // 获取信息
 private _getFocecontent=(index)=>{
+    if(index<=0){index = 0}
     let pos = new Laya.Vector3(this.FourcePointRouter[index].point.x,
     this.FourcePointRouter[index].point.y);
     return pos;
@@ -328,17 +332,24 @@ private forceLine=()=>{
 
 // 着力点的选取 
 private _FocusPoint=(LeadPosition)=>{
+    let value = null;
     let pos = this._getFocecontent(this.FoucePointIndex);// 着力点坐标
+    let beforePos = this._getFocecontent(this.FoucePointIndex-1);// 上一个着力点坐标
     let size = TOOLS.getline(pos,LeadPosition);// 计算主角和着力点的距离
-    if(size<=CubeSize.X*2||Math.abs(LeadPosition.x-pos.x)<=CubeSize.X*2){
+    if(LeadPosition.x<=(beforePos.x+(CubeSize.X/2))){
+        // 未超过上一个着力点
+        value= beforePos;
+    }else if(LeadPosition.x>=pos.x||pos.x-LeadPosition.x<=(CubeSize.X/2)){
+        // 超过着力点
         this.FoucePointIndex++;
-        return pos;// 正常情况
-    }else if(pos.x-LeadPosition.x>=CubeSize.X*1){
-        return this._getFocecontent(this.FoucePointIndex-1);//取目前使用的着力点
-    }else if(LeadPosition.x-pos.x>=CubeSize.X*1){
+        var a=this._FocusPoint(LeadPosition); 
+        console.log(a);
+        value = a;
+    }else{
         this.FoucePointIndex++;
-        return this._FocusPoint(LeadPosition);//递归
+        value= pos;// 正常情况
     }
+    return value;
 }
 
 // 坐标象限
@@ -414,19 +425,19 @@ private cameraAnimation = (call):void=>{
  * 
  */
 
-// 方块创建
-private cubeconfig = ()=>{
-    if(this.FourcePointRouter.length-this.FoucePointIndex<=5){
-        this.RenderCube(100);// 创建方块
-        this.cuberecovery(80);// 回收方块
-    }
-}
 
-// 方块回收
-private cuberecovery = (size)=>{
-    for(let i = size;i--;){
-        TOOLS.pushCube("cube",Laya.stage._childs[0]._childs[i+3],true);
-    }   
+// 方块回收与创建
+private cubectr = (val)=>{
+    this.pollctr+=val;
+    if(this.pollctr>=CubeSize.X){
+        if(Laya.stage._childs[0]._childs.length>=40){
+            for(let i = 10;i--;){
+                Laya.stage._childs[0]._childs[8].destroy();
+            }
+        }
+        this.RenderCube(2);// 创建方块
+        this.pollctr=0;
+    }
 }
 
 // 远程配置表管理
@@ -512,7 +523,7 @@ private AddBox = (type:number=null,index:number)=>{
 private Lead = ()=>{
     let target_cube = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.SphereMesh(0.15, 8, 8))) as Laya.MeshSprite3D;
     var material: Laya.StandardMaterial = new Laya.StandardMaterial();
-    material.diffuseTexture = Laya.Texture2D.load("res/image/color/Football.png");
+    material.diffuseTexture = Laya.Texture2D.load("res/image/color/football.jpg");
     target_cube.meshRender.material = material;
     target_cube.transform.position = new Laya.Vector3(0.8,7,0);
     // material.albedo=new Laya.Vector4(1,1,2,0.3);
@@ -562,12 +573,13 @@ private collisionDetection(pos){
     let max_height = toppos.y-(CubeSize.Z/2);// 最高高度 上部
     let min_height = bottompos.y+(CubeSize.Z/2);// 最低高度 下部
     if(pos.y>=max_height||pos.y<=min_height){
-        console.log(`第${i}个    ${top}    ${bottom}  ${toppos}   ${bottompos}`);
+        // console.log(`第${i}个    ${top}    ${bottom}  ${toppos}   ${bottompos}`);
         // 结束游戏
         this.accelerate = false;// 关闭圆周运动
         this.whereabouts = false;// 关闭斜抛运动
         this.collision = false;// 关闭碰撞检测
         this.eventControl = false;// 关闭事件监听
+        this.ForceLineObj.transform.scale = new Laya.Vector3(1,1,1);// 关闭着力线
     }
 }
 
@@ -588,6 +600,7 @@ private updata(){
             self.Circumferential.angle += ((Laya.timer.delta/1000*self.Circumferential.angularVelocity)*180/Math.PI);// 计算角度
             self.Circumferential.angularVelocity+=self.Circumferential.speed;// 递增角速度
             self.camera.transform.translate(new Laya.Vector3(office.x,office.y,0),false);
+            self.cubectr(office.x);//控制方块生成
         }
         // 斜抛运动
         if(self.whereabouts){
@@ -600,6 +613,7 @@ private updata(){
             self.SlantingThrow.time+=(Laya.timer.delta/1000);
             let vect3 = new Laya.Vector3(this.SlantingThrow.pos.x+_.X,this.SlantingThrow.pos.y+_.Y,0);// 位移向量
             this.camera.transform.translate(new Laya.Vector3(vect3.x-pos.x,vect3.y-pos.y),false);
+            self.cubectr(vect3.x-pos.x);//控制方块生成
             this.Lead_cube.transform.position=vect3;
         }
         // 单摆运动
