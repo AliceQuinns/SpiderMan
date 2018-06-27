@@ -4,11 +4,13 @@ let VIEW = null;
 let CubeSize = { X: 0.8, Y: 0.5, Z: 5 };
 /* 初始着力线的尺寸 */
 let CylinderMeshCube = { X: .01, Y: 0.01, Z: 8 };
+/* 背景图的尺寸 */
+let bgsize = { X: 30, Y: 80, Z: 0.001 };
 /* 圆周运动参数 */
 let GLOB_Circumferential = {
     angularVelocity: 0.001,
     speed: 0.001,
-    increment: 0.0001,
+    increment: 0.0005,
 };
 /* 服务器地址 */
 let SERVERURL = "";

@@ -29,6 +29,9 @@ module WetchGame{
         private Score:Laya.Text;// 分数节点
         private fonttext;// 位图字体
         private pollctr:number=0;//控制方块的生成
+        private bgctr:number=0;//控制背景的轮播
+        private bgobj = [];// 背景节点数组
+        private gamestatus:boolean=true;//控制分数
         // 圆周运动
         private Circumferential:any={
             angularVelocity: GLOB_Circumferential.angularVelocity,// 角速度
@@ -120,20 +123,38 @@ private Main3D=()=>{
  */
 
 private startGame=()=>{
-    let btn =  this.scene2D.getChildByName("start") as Laya.Button;
+    let btn =  this.scene2D.getChildByName("home").getChildByName("start") as Laya.Button;
     btn.on(Laya.Event.CLICK,this,(e)=>{
         btn.offAll();// 防止重复点击
         //this.bitmaptext();//绘制分数节点
         e.stopPropagation();
+        let leadpos = new Laya.Vector3(0.8,7,0);// 默认主角位置
+        let pos = this.Lead_cube.transform.position;// 当前主角位置
+        var x = pos.x-leadpos.x,y=pos.y-leadpos.y;// 主角位置偏移
+        var a=0,b=0,time=500;
+        // x轴偏移
+        var xb = window.setInterval(()=>{
+            b+=Math.abs(x/time);
+            if(b>=Math.abs(x)){
+                window.clearInterval(xb);
+            }
+            this.camera.transform.translate(new Laya.Vector3(x/time,0,0));
+        },Math.abs(x/time));
+        // y轴偏移
+        var yb = window.setInterval(()=>{
+            a+=Math.abs(y/time);
+            if(a>=Math.abs(y)){
+                window.clearInterval(yb);
+            }
+            this.camera.transform.translate(new Laya.Vector3(y/time,0,0));
+        },Math.abs(y/time));
         this.LeadLoop = false;//关闭主角自转
         this.ForceLineMain("end");// 回收着力线
         this.eventSwitch();// 开启游戏控制
-        this.scene2D.removeChildren();// 删除2D场景全部子节点
+        var _= this.scene2D.getChildByName("home") as Laya.Box;
+        _.visible = false;// 隐藏2D场景子节点
         this.collision = true;//开启碰撞检测
-        let leadpos = new Laya.Vector3(0.8,7,0);
-        let pos = this.Lead_cube.transform.position;
-        let offic = new Laya.Vector3(pos.x-leadpos.x,pos.y-leadpos.y,0);
-        this.camera.transform.translate(offic);
+        this.fractoinatr();// 开始递增分数
     });
 }
 
@@ -164,7 +185,7 @@ private bitmaptext=(text:string=null)=>{
 // 字体动画
 private animation2D=()=>{
     let _ = this.scene2D;
-    let title = _.getChildByName("title");
+    let title = _.getChildByName("home").getChildByName("title");
     let status = true;
     let alphaanim = ()=>{
         if(status){
@@ -197,6 +218,7 @@ private initScene = ()=>{
     var camera: Laya.Camera = (scene.addChild(new Laya.Camera(0, 0.1, 100))) as Laya.Camera;
     camera.transform.translate(new Laya.Vector3(-1, 10, 6),false);
     camera.transform.localRotationEuler = new Laya.Vector3(-15,-25,2);
+    camera.clearColor = new Laya.Vector4(0.1, 0.2, 0.1, 1);
     this.camera = camera;
 
     //平行光
@@ -204,33 +226,25 @@ private initScene = ()=>{
     directionLight.direction = new Laya.Vector3(2,-2,-3);
     this.directionLight = directionLight;
 
-    //添加地板
-    var bottombox: Laya.MeshSprite3D = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(30, 50, 0.001))) as Laya.MeshSprite3D;
-    var material: Laya.StandardMaterial = new Laya.StandardMaterial();
-    material.diffuseTexture = Laya.Texture2D.load("res/image/color/floor.png");
-    bottombox.meshRender.material = material;
-    bottombox.transform.position=new Laya.Vector3(5,0,-10);
-    bottombox.transform.localRotationEuler = new Laya.Vector3(0,0,0);
+    for(let i=0;i<3;i++){
+        //添加背景
+        var bottombox: Laya.MeshSprite3D = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(bgsize.X, bgsize.Y, bgsize.Z))) as Laya.MeshSprite3D;
+        var material: Laya.StandardMaterial = new Laya.StandardMaterial();
+        material.diffuseTexture = Laya.Texture2D.load("res/image/color/floor.png");
+        bottombox.meshRender.material = material;
+        bottombox.transform.position=new Laya.Vector3(5+bgsize.X*i,0,-10);
+        // bottombox.transform.localRotationEuler = new Laya.Vector3(0,0,0);
+        this.bgobj.push(bottombox);
+    }
 
-    // 前部背景
-    var Front: Laya.MeshSprite3D = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(30, 0.001, 30))) as Laya.MeshSprite3D;
-    var material: Laya.StandardMaterial = new Laya.StandardMaterial();
-    material.diffuseTexture = Laya.Texture2D.load("res/image/color/Backgroundmap.png");
-    Front.meshRender.material = material;
-    Front.transform.localRotationEuler = bottombox.transform.localRotationEuler;
-    Front.transform.position = new Laya.Vector3(5,15,-35);
-
-    // 右部背景
-    var rightbox: Laya.MeshSprite3D = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(0.001, 50, 30))) as Laya.MeshSprite3D;
-    var material: Laya.StandardMaterial = new Laya.StandardMaterial();
-    material.diffuseTexture = Laya.Texture2D.load("res/image/color/Backgroundmap.png");
-    rightbox.meshRender.material = material;
-    rightbox.transform.localRotationEuler = bottombox.transform.localRotationEuler;
-    rightbox.transform.position = new Laya.Vector3(20,15,-10);
-
-    window["Front"] = Front;
-    window["bottombox"] = bottombox;
-    window["rightbox"] = rightbox;
+    //开启雾化效果
+    scene.enableFog = true;
+    //设置雾化的颜色
+    scene.fogColor = new Laya.Vector3(0.1,0.2,0.1);
+    //设置雾化的起始位置，相对于相机的距离
+    scene.fogStart = 10;
+    //设置雾化最浓处的距离。
+    scene.fogRange = 50;
 }
 
 /**
@@ -332,8 +346,8 @@ private forceLine=()=>{
 
 // 着力点的选取 
 private _FocusPoint=(LeadPosition)=>{
-    let value = null;
-    let pos = this._getFocecontent(this.FoucePointIndex);// 着力点坐标
+    let value = null;// 值
+    let pos = this._getFocecontent(this.FoucePointIndex);// 下一个着力点坐标
     let beforePos = this._getFocecontent(this.FoucePointIndex-1);// 上一个着力点坐标
     let size = TOOLS.getline(pos,LeadPosition);// 计算主角和着力点的距离
     if(LeadPosition.x<=(beforePos.x+(CubeSize.X/2))){
@@ -343,7 +357,7 @@ private _FocusPoint=(LeadPosition)=>{
         // 超过着力点
         this.FoucePointIndex++;
         var a=this._FocusPoint(LeadPosition); 
-        console.log(a);
+        //console.log(a);
         value = a;
     }else{
         this.FoucePointIndex++;
@@ -376,7 +390,7 @@ private _quadrant(LeadPosition,FoucePosition){
     return {quadrant,angleLead};
 }
 
-//  连接主角
+// 连接主角
 private FoceAnimation = (pos)=>{
     let LeadPosition = pos;// 主角坐标
     let FoucePosition = this.foucePos;// 着力点坐标
@@ -416,6 +430,18 @@ private cameraAnimation = (call):void=>{
         a+=0.2;
     }
     Laya.timer.loop(1,this,anim);
+}
+
+// 背景无限轮播
+private bgInfiniteRelay = (val)=>{
+    this.bgctr+=val;
+    if(this.bgctr>=bgsize.X){
+        var pos = this.bgobj[2].transform.position;
+        var target = this.bgobj.shift();//取第一个
+        target.transform.translate(new Laya.Vector3(pos.x+bgsize.X,0,0));
+        this.bgobj.push(target);//排入最后
+        this.bgctr=0;
+    }
 }
 
 /**
@@ -460,7 +486,7 @@ private configure = ()=>{
 // 立方体生成
 private RenderCube = (size:number):void=>{
     let self = this;
-    console.log(self.Cube_number);
+    //console.log(self.Cube_number);
     for(let i=size;i--;){
         if(self.Cube_number>=self.Router_game.length||!self.Router_game[self.Cube_number]){
             /* 配置读取完毕 */ 
@@ -533,6 +559,25 @@ private Lead = ()=>{
 
 /**
  * 
+ * 分数递增
+ * 
+ */
+
+private fractoinatr = ()=>{
+     // 分数控制逻辑
+    var _=(this.scene2D.getChildByName("game").getChildByName("Fraction")) as Laya.FontClip;
+    _.visible =true;
+    window.setInterval(()=>{
+        if(this.gamestatus){
+            let text = Number(_.value);
+            _.value = String( text += 1);
+            //Number()
+        };
+    },500);
+}
+
+/**
+ * 
  * 运动函数
  * 
  */
@@ -580,6 +625,7 @@ private collisionDetection(pos){
         this.collision = false;// 关闭碰撞检测
         this.eventControl = false;// 关闭事件监听
         this.ForceLineObj.transform.scale = new Laya.Vector3(1,1,1);// 关闭着力线
+        this.gamestatus = false;//关闭分数递增
     }
 }
 
@@ -601,6 +647,7 @@ private updata(){
             self.Circumferential.angularVelocity+=self.Circumferential.speed;// 递增角速度
             self.camera.transform.translate(new Laya.Vector3(office.x,office.y,0),false);
             self.cubectr(office.x);//控制方块生成
+            self.bgInfiniteRelay(office.x);//控制背景轮播
         }
         // 斜抛运动
         if(self.whereabouts){
@@ -614,7 +661,9 @@ private updata(){
             let vect3 = new Laya.Vector3(this.SlantingThrow.pos.x+_.X,this.SlantingThrow.pos.y+_.Y,0);// 位移向量
             this.camera.transform.translate(new Laya.Vector3(vect3.x-pos.x,vect3.y-pos.y),false);
             self.cubectr(vect3.x-pos.x);//控制方块生成
+            self.bgInfiniteRelay(vect3.x-pos.x);//控制背景轮播
             this.Lead_cube.transform.position=vect3;
+            self.Circumferential.angularVelocity-=self.Circumferential.speed;// 递减角速度
         }
         // 单摆运动
         if(self.LeadLoop){
@@ -638,7 +687,7 @@ private updata(){
             this.collisionDetection(pos);
         }   
         // 主角动画
-        this.Lead_cube.transform.rotate(new Laya.Vector3(.1,.1,.1))
+        this.Lead_cube.transform.rotate(new Laya.Vector3(.1,.1,.1));
     })
 }
 
