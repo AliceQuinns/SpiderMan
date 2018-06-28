@@ -106,6 +106,7 @@ private Main3D=()=>{
         let scene = Laya.stage.addChild(new ui.indexUI) as Laya.Scene;
         this.scene2D = scene;
         scene.zOrder = 999;
+        this.loadAdn();//开场动画
         this.animation2D();// 字体动画
         this.startGame();// 开始游戏按钮
     });
@@ -123,15 +124,14 @@ private Main3D=()=>{
  */
 
 private startGame=()=>{
-    let btn =  this.scene2D.getChildByName("home").getChildByName("start") as Laya.Button;
+    let btn =  this.scene2D.getChildByName("home").getChildByName("btn_groug").getChildByName("start") as Laya.Button;
     btn.on(Laya.Event.CLICK,this,(e)=>{
         btn.offAll();// 防止重复点击
-        //this.bitmaptext();//绘制分数节点
         e.stopPropagation();
         let leadpos = new Laya.Vector3(0.8,7,0);// 默认主角位置
         let pos = this.Lead_cube.transform.position;// 当前主角位置
         var x = pos.x-leadpos.x,y=pos.y-leadpos.y;// 主角位置偏移
-        var a=0,b=0,time=500;
+        var a=0,b=0,time=100;
         // x轴偏移
         var xb = window.setInterval(()=>{
             b+=Math.abs(x/time);
@@ -158,28 +158,32 @@ private startGame=()=>{
     });
 }
 
-// 位图字体绘制
-private bitmaptext=(text:string=null)=>{
-    if(text){
-        this.Score.text = text;
-    }else{
-        console.log("绘制位图字体");
-        let fonttext = new Laya.BitmapFont();
-        this.fonttext = fonttext;
-        fonttext.loadFont("res/bitmapFont/fonta.fnt",new Laya.Handler(this,()=>{
-            fonttext.setSpaceWidth(10);
-            Laya.Text.registerBitmapFont("0",fonttext);
-            let score = new Laya.Text();
-            score.text = "0";
-            score.align = "center";
-            score.fontSize = 100;
-            score.x = Laya.stage.width/2;
-            score.y = 100;
-            score.font = this.fonttext;
-            this.Score = score;
-            this.scene2D.addChild(score);
-        }))
-    }
+/**
+ * 
+ * 动画
+ * 
+ */
+
+// 开场动画
+private loadAdn=()=>{
+    let btn_ground = this.scene2D.getChildByName("home").getChildByName("btn_groug") as Laya.Box;
+    let left_a = this.scene2D.getChildByName("home").getChildByName("left_a") as Laya.Image;
+    let left_b = this.scene2D.getChildByName("home").getChildByName("left_b") as Laya.Image;
+    let left_c = this.scene2D.getChildByName("home").getChildByName("left_c") as Laya.Image;
+    let left_d = this.scene2D.getChildByName("home").getChildByName("left_d") as Laya.Image;
+    let right_a = this.scene2D.getChildByName("home").getChildByName("right_a") as Laya.Image;
+    let right_b = this.scene2D.getChildByName("home").getChildByName("right_b") as Laya.Image;
+    let right_c = this.scene2D.getChildByName("home").getChildByName("right_c") as Laya.Image;
+    let logo = this.scene2D.getChildByName("home").getChildByName("logo") as Laya.Image;
+    animation.move(btn_ground,"y",920,500,0);
+    animation.move(left_a,"x",0,500,200);
+    animation.move(left_b,"x",0,500,400);
+    animation.move(left_c,"x",200,500,600);
+    animation.move(left_d,"x",0,500,0);
+    animation.move(right_a,"x",510,500,200);
+    animation.move(right_b,"x",520,500,400);
+    animation.move(right_c,"x",490,500,0);
+    animation.scale(logo,1,1,1000,0);
 }
 
 // 字体动画

@@ -31,6 +31,7 @@ let Circular_point_texture = [
     "res/image/color/bga_1.png"
 ]
 
+/*  全局插件 */
 var TOOLS = {
     // 切换场景并清空上级场景
     runScene: (scene,arg=null)=>{
@@ -126,6 +127,38 @@ var TOOLS = {
     getRandomInt: function(min,max){
         return Math.floor(Math.random()*(max-min)+min);
     },
+}
+
+/* 动画 */
+var animation = {
+    // 平移
+    move: (target:any,type:string,length:number,time:number,delay:number,loop:boolean=false)=>{
+        if(type==="y"){
+            // 水平
+            if(loop){
+                // 循环
+                var ctr = false;
+                var _=()=>{
+                    ctr = !ctr;
+                    if(ctr){
+                         Laya.Tween.to(target, { top : length }, time, Laya.Ease.bounceOut, Laya.Handler.create(this,_),delay);
+                    }else{
+                         Laya.Tween.to(target, { top : length }, time, Laya.Ease.bounceOut, Laya.Handler.create(this,_),delay);
+                    }
+                }
+                _();
+            }else{
+                Laya.Tween.to(target, { top : length }, time, Laya.Ease.bounceOut, null,delay);
+            }
+        }else if(type==="x"){
+            // 垂直
+            Laya.Tween.to(target, { left : length }, time, Laya.Ease.bounceOut, null,delay);
+        }
+    },
+    // 缩放
+    scale: (target,Xscale,Yscale,time,delay)=>{
+        Laya.Tween.to(target, { scaleX : Xscale,scaleY: Yscale }, time, Laya.Ease.bounceOut, null,delay);
+    }
 }
 
 /* 音频管理 */
