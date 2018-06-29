@@ -3,7 +3,7 @@ let VIEW = null;
 /* 默认立方体的尺寸 */
 let CubeSize = {X:0.8,Y:0.5,Z:5};
 /* 初始着力线的尺寸 */
-let CylinderMeshCube = {X:.01,Y:0.01,Z:8}
+let CylinderMeshCube = {X:.02,Y:0.02,Z:8}
 /* 背景图的尺寸 */
 let bgsize = {X:30,Y:80,Z:0.001}
 /* 圆周运动参数 */
@@ -17,18 +17,19 @@ let SERVERURL:string = "";
 /* 立方体贴图 */
 let cubeTexture = [
     [
-        "res/image/color/stone.jpg",
-        "res/image/color/stone2.jpg"
+        "res/image/color/stone.png",
+        "res/image/color/stone2.png"
     ]
 ]
 /* 圆柱体贴图 */
 let CylinderMeshTexture = [
-    "res/image/color/bga_1.png",
-    "res/image/color/bgc_2.png"
+    "res/image/color/stone.png",
+    "res/image/color/stone2.png"
 ]
 /* 着力点贴图 */
 let Circular_point_texture = [
-    "res/image/color/bga_1.png"
+    "res/image/color/stone.png",
+    "res/image/color/stone2.png"
 ]
 
 /*  全局插件 */

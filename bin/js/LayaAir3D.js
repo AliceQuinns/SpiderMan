@@ -11,7 +11,7 @@ class LayaAir3D {
         Laya.stage.scaleMode = "exactfit";
         Laya.stage.screenMode = "vertical";
         //开启统计信息
-        Laya.Stat.show();
+        //Laya.Stat.show();
         // 进入game场景
         TOOLS.runScene(WetchGame.gameScene);
     }

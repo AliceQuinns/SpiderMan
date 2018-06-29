@@ -152,7 +152,7 @@ private startGame=()=>{
         this.ForceLineMain("end");// 回收着力线
         this.eventSwitch();// 开启游戏控制
         var _= this.scene2D.getChildByName("home") as Laya.Box;
-        _.visible = false;// 隐藏2D场景子节点
+        _.destroy();
         this.collision = true;//开启碰撞检测
         this.fractoinatr();// 开始递增分数
     });
@@ -182,7 +182,7 @@ private loadAdn=()=>{
     animation.move(left_d,"x",0,500,0);
     animation.move(right_a,"x",510,500,200);
     animation.move(right_b,"x",520,500,400);
-    animation.move(right_c,"x",490,500,0);
+    animation.move(right_c,"x",550,500,0);
     animation.scale(logo,1,1,1000,0);
 }
 
@@ -208,6 +208,44 @@ private animation2D=()=>{
 
 /**
  * 
+ *  微信开放数据域
+ * 
+ */
+
+private Wxcanvas=(target)=>{
+    if(!Laya.Browser.window.wx)return;
+    // 获取缩放矩阵
+    var form: Laya.Matrix = Laya.stage._canvasTransform;
+    var form_arr = [form.a,form.b,form.c,form.d,form.tx,form.ty];
+    // 初始化开放域canvas
+    Laya.timer.once(100, this, function():void{
+        // 创建canvas
+        Laya.Browser.window.sharedCanvas.width = Laya.stage.width;
+        Laya.Browser.window.sharedCanvas.height = Laya.stage.height;
+        let openDataContext = Laya.Browser.window.wx.getOpenDataContext();
+        openDataContext.postMessage({
+            type: 1,
+            data:{
+                    score_v_x:200,
+                    score_v_y:200,
+                    rk_v_x:200,
+                    rk_v_y:200,
+                    form_arr:form_arr
+                }
+            })  
+    });
+    // 渲染主域的canvas
+    Laya.timer.once(500, this, function():void{
+        var sprite:Laya.Sprite = new Laya.Sprite();
+        sprite.pos(0, 0);
+        var texture:Laya.Texture = new Laya.Texture(Laya.Browser.window.sharedCanvas);
+        sprite.graphics.drawTexture(texture, 0, 0, texture.width, texture.height);
+        target.addChild(sprite);
+	});
+}
+
+/**
+ * 
  * 场景绘制
  * 
  */
@@ -222,7 +260,7 @@ private initScene = ()=>{
     var camera: Laya.Camera = (scene.addChild(new Laya.Camera(0, 0.1, 100))) as Laya.Camera;
     camera.transform.translate(new Laya.Vector3(-1, 10, 6),false);
     camera.transform.localRotationEuler = new Laya.Vector3(-15,-25,2);
-    camera.clearColor = new Laya.Vector4(0.1, 0.2, 0.1, 1);
+    camera.clearColor = new Laya.Vector4(1, 1, 1, 1);
     this.camera = camera;
 
     //平行光
@@ -244,7 +282,7 @@ private initScene = ()=>{
     //开启雾化效果
     scene.enableFog = true;
     //设置雾化的颜色
-    scene.fogColor = new Laya.Vector3(0.1,0.2,0.1);
+    scene.fogColor = new Laya.Vector3(1,1,1);
     //设置雾化的起始位置，相对于相机的距离
     scene.fogStart = 10;
     //设置雾化最浓处的距离。
@@ -320,8 +358,16 @@ private Rend_Circular_point=(pos)=>{
 // 获取信息
 private _getFocecontent=(index)=>{
     if(index<=0){index = 0}
-    let pos = new Laya.Vector3(this.FourcePointRouter[index].point.x,
-    this.FourcePointRouter[index].point.y);
+    let pos;
+    if(!!this.FourcePointRouter[index]){
+        pos = new Laya.Vector3(this.FourcePointRouter[index].point.x,
+        this.FourcePointRouter[index].point.y);
+    }else{
+        pos = new Laya.Vector3(this.FourcePointRouter[index-1].point.x,
+        this.FourcePointRouter[index-1].point.y);
+        this.RenderCube(2);// 创建方块
+    }
+    
     return pos;
 }
 
@@ -630,7 +676,26 @@ private collisionDetection(pos){
         this.eventControl = false;// 关闭事件监听
         this.ForceLineObj.transform.scale = new Laya.Vector3(1,1,1);// 关闭着力线
         this.gamestatus = false;//关闭分数递增
+        this._RankingList();//场景排行榜
     }
+}
+
+/**
+ * 
+ *  创建排行榜场景
+ * 
+ */
+
+private _RankingList(){
+    this.scene2D.destroy();//清空index场景
+    let scene = Laya.stage.addChild(new ui.alertUI) as Laya.Scene;
+    this.scene2D = scene;
+    scene.zOrder = 999;
+    this.Wxcanvas(scene);//创建排行榜 
+    let btn = scene.getChildByName("reset") as Laya.Button;
+    btn.on(Laya.Event.CLICK,this,()=>{
+        TOOLS.runScene(WetchGame.gameScene);//重新开始
+    })
 }
 
 /**
