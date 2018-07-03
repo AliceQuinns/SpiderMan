@@ -25,6 +25,7 @@ var WetchGame;
             this.bgctr = 0; //控制背景的轮播
             this.bgobj = []; // 背景节点数组
             this.gamestatus = true; //控制分数
+            this._Fraction = "0"; //当前分数
             // 圆周运动
             this.Circumferential = {
                 angularVelocity: GLOB_Circumferential.angularVelocity,
@@ -68,6 +69,8 @@ var WetchGame;
             /* 绘制3D场景 */
             this.Main3D = () => {
                 let self = this;
+                /* 渲染开放数据域场景 */
+                self.renderCanvas();
                 /* 绘制3D场景 */
                 self.initScene();
                 /* 创建主角 */
@@ -94,7 +97,7 @@ var WetchGame;
                     this.startGame(); // 开始游戏按钮
                 });
                 /* 播放背景音乐 */
-                AUDIO.play((TOOLS.getRandomInt(2, 0) ? "bg_1" : "bg_2"));
+                AUDIO.play(TOOLS.getRandomInt(0, 2) ? "bg_1" : "bg_2");
                 /* 关闭全部运动 */
                 this.accelerate = this.whereabouts = false;
             };
@@ -104,7 +107,9 @@ var WetchGame;
              *
              */
             this.startGame = () => {
+                let setup = this.scene2D.getChildByName("home").getChildByName("btn_groug").getChildByName("setup");
                 let btn = this.scene2D.getChildByName("home").getChildByName("btn_groug").getChildByName("start");
+                // 开始游戏
                 btn.on(Laya.Event.CLICK, this, (e) => {
                     btn.offAll(); // 防止重复点击
                     e.stopPropagation();
@@ -136,6 +141,9 @@ var WetchGame;
                     this.collision = true; //开启碰撞检测
                     this.fractoinatr(); // 开始递增分数
                 });
+                // // 排行榜
+                // setup.on(Laya.Event.CLICK,this,(e)=>{
+                // })
             };
             /**
              *
@@ -188,29 +196,47 @@ var WetchGame;
              *  微信开放数据域
              *
              */
-            this.Wxcanvas = (target) => {
+            // 初始化开放域
+            this.renderCanvas = () => {
                 if (!Laya.Browser.window.wx)
                     return;
                 // 获取缩放矩阵
                 var form = Laya.stage._canvasTransform;
                 var form_arr = [form.a, form.b, form.c, form.d, form.tx, form.ty];
-                // 初始化开放域canvas
-                Laya.timer.once(100, this, function () {
-                    // 创建canvas
-                    Laya.Browser.window.sharedCanvas.width = Laya.stage.width;
-                    Laya.Browser.window.sharedCanvas.height = Laya.stage.height;
-                    let openDataContext = Laya.Browser.window.wx.getOpenDataContext();
-                    openDataContext.postMessage({
-                        type: 1,
-                        data: {
-                            score_v_x: 200,
-                            score_v_y: 200,
-                            rk_v_x: 200,
-                            rk_v_y: 200,
-                            form_arr: form_arr
-                        }
+                if (!window["pushScore"]) {
+                    // 初始化开放域canvas
+                    Laya.timer.once(100, this, function () {
+                        // 创建canvas
+                        Laya.Browser.window.sharedCanvas.width = Laya.stage.width;
+                        Laya.Browser.window.sharedCanvas.height = Laya.stage.height;
+                        let openDataContext = Laya.Browser.window.wx.getOpenDataContext();
+                        openDataContext.postMessage({
+                            type: 1,
+                            data: {
+                                score_v_x: 50,
+                                score_v_y: 200,
+                                rk_v_x: 50,
+                                rk_v_y: 100,
+                                form_arr: form_arr
+                            }
+                        });
                     });
-                });
+                }
+                else {
+                    window["pushScore"](1, {
+                        score_v_x: 50,
+                        score_v_y: 200,
+                        rk_v_x: 50,
+                        rk_v_y: 100,
+                        form_arr: form_arr
+                    });
+                    console.log("存在puahscore函数");
+                }
+            };
+            // 渲染开放域
+            this.Wxcanvas = (target) => {
+                if (!Laya.Browser.window.wx)
+                    return;
                 // 渲染主域的canvas
                 Laya.timer.once(500, this, function () {
                     var sprite = new Laya.Sprite();
@@ -219,6 +245,9 @@ var WetchGame;
                     sprite.graphics.drawTexture(texture, 0, 0, texture.width, texture.height);
                     target.addChild(sprite);
                 });
+                // 打开分数排行榜
+                console.log("获得分数", this._Fraction);
+                window["pushScore"](2, this._Fraction);
             };
             /**
              *
@@ -644,18 +673,25 @@ var WetchGame;
         }
         /**
          *
-         *  创建排行榜场景
+         *  创建游戏结束场景
          *
          */
         _RankingList() {
+            // 保存分数
+            var _ = (this.scene2D.getChildByName("game").getChildByName("Fraction"));
+            this._Fraction = _.value;
             this.scene2D.destroy(); //清空index场景
             let scene = Laya.stage.addChild(new ui.alertUI);
             this.scene2D = scene;
             scene.zOrder = 999;
             this.Wxcanvas(scene); //创建排行榜 
             let btn = scene.getChildByName("reset");
+            let share = scene.getChildByName("share");
             btn.on(Laya.Event.CLICK, this, () => {
                 TOOLS.runScene(WetchGame.gameScene); //重新开始
+            });
+            share.on(Laya.Event.CLICK, this, () => {
+                window["share"](); //分享
             });
         }
         /**

@@ -2,7 +2,7 @@
     "x":0,
     "type":"Dialog",
     "selectedBox":1,
-    "selecteID":2,
+    "selecteID":4,
     "props":{"width":720,"sceneColor":"#000000","height":1280},
     "nodeParent":-1,
     "label":"Dialog",
@@ -15,13 +15,26 @@
         {
             "x":15,
             "type":"Button",
-            "props":{"y":1020,"x":152,"var":"reset","stateNum":"1","skin":"index/btn_play_againx.png","name":"reset"},
+            "props":{"y":1020,"x":70,"var":"reset","stateNum":"1","skin":"index/btn_play_againx.png","name":"reset"},
             "nodeParent":1,
             "label":"Button(reset)",
             "isDirectory":false,
             "isAniNode":true,
             "hasChild":false,
             "compId":2,
+            "child":[
+                ]
+        },
+        {
+            "x":15,
+            "type":"Button",
+            "props":{"y":1042,"x":509,"width":185,"var":"share","stateNum":"1","skin":"index/share.png","name":"share","height":107},
+            "nodeParent":1,
+            "label":"Button(share)",
+            "isDirectory":false,
+            "isAniNode":true,
+            "hasChild":false,
+            "compId":4,
             "child":[
                 ]
         }],

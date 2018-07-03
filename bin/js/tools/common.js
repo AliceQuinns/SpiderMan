@@ -172,10 +172,10 @@ let AUDIO = {
         let url = null, audio_type = "Musice";
         switch (type) {
             case "bg_1":
-                url = "res/audio/01.mp3";
+                url = "https://shop.yunfanshidai.com/xcxht/pqxcx/res/01.mp3";
                 break;
             case "bg_2":
-                url = "res/audio/02.mp3";
+                url = "https://shop.yunfanshidai.com/xcxht/pqxcx/res/02.mp3";
                 break;
         }
         ;

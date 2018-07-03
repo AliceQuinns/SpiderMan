@@ -1,8 +1,6 @@
 D .
 D index
-P 6FD836BB a.png
 P AF9CCC17 audio_on.png
-P 0E6881A7 b.png
 P D0BEF57B begin.png
 P B5732CA2 btn_play_againx.png
 P EB03AD22 c.png
@@ -11,17 +9,13 @@ P 809E8680 e.png
 P 0190CB2B f.png
 P 381C95A5 g.png
 P 0489A6AA gamelist.png
-P 83F2AA68 h.png
 P 2458FC8D i.png
 P E8A438C6 j.png
 P 7FC3C11E k.png
-R AA48BC38 l.png
-P 7646978B light_1.png
-P 48F350ED light_2.png
-P D8239E37 light_3.png
-R F068733B light_4.png
+P 43CBF2DA logo.png
 P 4D80C1F3 num.png
 P 66141A36 sbtn_1.png
 P 83D66F8A sbtn_2.png
+P 84811870 share.png
 P D5075567 shop.png
 R 562095CB vignette.png

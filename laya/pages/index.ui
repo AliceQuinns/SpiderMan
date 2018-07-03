@@ -1,8 +1,8 @@
 {
     "x":0,
     "type":"Dialog",
-    "selectedBox":1,
-    "selecteID":26,
+    "selectedBox":14,
+    "selecteID":39,
     "props":{"width":720,"sceneColor":"#ffffff","height":1280},
     "nodeParent":-1,
     "label":"Dialog",
@@ -40,18 +40,19 @@
                 {
                     "x":30,
                     "type":"Image",
-                    "props":{"y":178,"x":342,"width":395,"var":"logo","skin":"index/l.png","scaleY":0.5,"scaleX":0.5,"name":"logo","height":336,"anchorY":0.5,"anchorX":0.5},
+                    "props":{"y":215,"x":342,"width":395,"var":"logo","skin":"index/logo.png","scaleY":0.5,"scaleX":0.5,"name":"logo","height":336,"anchorY":0.5,"anchorX":0.5},
                     "nodeParent":14,
                     "label":"Image(logo)",
-                    "isOpen":false,
+                    "isOpen":true,
                     "isDirectory":true,
                     "isAniNode":true,
                     "hasChild":true,
                     "compId":18,
                     "child":[
                         {
+                            "x":45,
                             "type":"Image",
-                            "props":{"y":145,"x":169,"width":86,"skin":"index/i.png","rotation":0,"height":86,"anchorY":0.5,"anchorX":0.5},
+                            "props":{"y":-12,"x":219,"width":86,"skin":"index/i.png","rotation":0,"height":86},
                             "nodeParent":18,
                             "label":"Image",
                             "isOpen":true,
@@ -79,7 +80,7 @@
                 {
                     "x":30,
                     "type":"Image",
-                    "props":{"width":267,"var":"left_a","top":380,"skin":"index/k.png","name":"left_a","left":-300,"height":267},
+                    "props":{"width":267,"var":"left_a","top":331,"skin":"index/k.png","name":"left_a","left":-300,"height":267},
                     "nodeParent":14,
                     "label":"Image(left_a)",
                     "isDirectory":false,
@@ -119,7 +120,7 @@
                 {
                     "x":30,
                     "type":"Image",
-                    "props":{"width":204,"var":"right_a","top":393,"skin":"index/e.png","name":"right_a","left":718,"height":327},
+                    "props":{"width":204,"var":"right_a","top":344,"skin":"index/e.png","name":"right_a","left":718,"height":327},
                     "nodeParent":14,
                     "label":"Image(right_a)",
                     "isDirectory":false,
