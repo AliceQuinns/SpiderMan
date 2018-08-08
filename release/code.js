@@ -95987,7 +95987,10 @@ var WetchGame;
                 // 执行摄像机动画并绘制2d场景
                 this.cameraAnimation(() => {
                     let scene = Laya.stage.addChild(new ui.indexUI);
+                     Laya.stage.alignV = "middle";
                     this.scene2D = scene;
+                    window.sb = scene;
+                  sb.top = 80
                     scene.zOrder = 999;
                     this.loadAdn(); //开场动画
                     this.animation2D(); // 字体动画
@@ -96135,16 +96138,16 @@ var WetchGame;
                 if (!Laya.Browser.window.wx)
                     return;
                 // 渲染主域的canvas
-                Laya.timer.once(500, this, function () {
+                Laya.timer.once(1500, this, function () {
                     var sprite = new Laya.Sprite();
                     sprite.pos(0, 0);
                     var texture = new Laya.Texture(Laya.Browser.window.sharedCanvas);
-                    sprite.graphics.drawTexture(texture, 0, 0, texture.width, texture.height);
+                  sprite.graphics.drawTexture(texture, 0, 0, Laya.stage.width, Laya.stage.height);
                     target.addChild(sprite);
                 });
                 // 打开分数排行榜
                 console.log("获得分数", this._Fraction);
-                window["pushScore"](2, this._Fraction);
+                window["pushScore"]({type:1,data:{score:this._Fraction}});
             };
             /**
              *
@@ -96909,8 +96912,8 @@ class LayaAir3D {
         //适配模式
         Laya.stage.alignV = "middle";
         Laya.stage.alignH = "center";
-        Laya.stage.scaleMode = "exactfit";
-        Laya.stage.screenMode = "vertical";
+        Laya.stage.scaleMode = "fixedwidth";
+        Laya.stage.screenMode = "none";
         //开启统计信息
         //Laya.Stat.show();
         // 进入game场景

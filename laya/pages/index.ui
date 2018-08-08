@@ -1,8 +1,8 @@
 {
     "x":0,
     "type":"Dialog",
-    "selectedBox":14,
-    "selecteID":39,
+    "selectedBox":1,
+    "selecteID":26,
     "props":{"width":720,"sceneColor":"#ffffff","height":1280},
     "nodeParent":-1,
     "label":"Dialog",
@@ -15,7 +15,7 @@
         {
             "x":15,
             "type":"Image",
-            "props":{"y":0,"x":-249,"width":1200,"skin":"index/vignette.png","rotation":0,"height":1280},
+            "props":{"width":898,"skin":"index/vignette.png","rotation":0,"height":1572,"centerY":45,"centerX":5},
             "nodeParent":1,
             "label":"Image",
             "isDirectory":false,
@@ -62,7 +62,8 @@
                             "compId":19,
                             "child":[
                                 ]
-                        }]
+                        }],
+                    "$HIDDEN":false
                 },
                 {
                     "x":30,
@@ -75,7 +76,8 @@
                     "hasChild":false,
                     "compId":37,
                     "child":[
-                        ]
+                        ],
+                    "$HIDDEN":true
                 },
                 {
                     "x":30,
@@ -88,7 +90,8 @@
                     "hasChild":false,
                     "compId":25,
                     "child":[
-                        ]
+                        ],
+                    "$HIDDEN":true
                 },
                 {
                     "x":30,
@@ -102,7 +105,8 @@
                     "hasChild":false,
                     "compId":20,
                     "child":[
-                        ]
+                        ],
+                    "$HIDDEN":true
                 },
                 {
                     "x":30,
@@ -115,7 +119,8 @@
                     "hasChild":false,
                     "compId":38,
                     "child":[
-                        ]
+                        ],
+                    "$HIDDEN":true
                 },
                 {
                     "x":30,
@@ -128,7 +133,8 @@
                     "hasChild":false,
                     "compId":16,
                     "child":[
-                        ]
+                        ],
+                    "$HIDDEN":true
                 },
                 {
                     "x":30,
@@ -141,7 +147,8 @@
                     "hasChild":false,
                     "compId":21,
                     "child":[
-                        ]
+                        ],
+                    "$HIDDEN":true
                 },
                 {
                     "x":30,
@@ -154,7 +161,8 @@
                     "hasChild":false,
                     "compId":27,
                     "child":[
-                        ]
+                        ],
+                    "$HIDDEN":true
                 },
                 {
                     "x":30,
@@ -167,7 +175,8 @@
                     "hasChild":false,
                     "compId":9,
                     "child":[
-                        ]
+                        ],
+                    "$HIDDEN":true
                 },
                 {
                     "x":30,

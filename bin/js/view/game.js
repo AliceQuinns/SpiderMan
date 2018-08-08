@@ -100,6 +100,7 @@ var WetchGame;
                 AUDIO.play(TOOLS.getRandomInt(0, 2) ? "bg_1" : "bg_2");
                 /* 关闭全部运动 */
                 this.accelerate = this.whereabouts = false;
+                new yftools.YFWindow("https://shop.yunfanshidai.com/xcxht/slyxhz/api/getothergamelist.php?gameid=4&openid=test");
             };
             /**
              *

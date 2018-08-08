@@ -10,13 +10,13 @@ class LayaAir3D {
         Laya.stage.alignV = "middle";
         Laya.stage.alignH = "center";
 
-        Laya.stage.scaleMode = "exactfit";
-        Laya.stage.screenMode = "vertical";
+        Laya.stage.scaleMode = "fixedwidth";
+        Laya.stage.screenMode = "none";
 
         //开启统计信息
-        //Laya.Stat.show();
+        Laya.Stat.show();
 
-        // 进入game场景
+        // 初始化场景
         TOOLS.runScene(WetchGame.gameScene);
     }
 }
