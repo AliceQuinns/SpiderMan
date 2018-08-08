@@ -1,7 +1,4 @@
-/**
- *   主角类
- *
- */
+// 主角类
 var WetchGame;
 (function (WetchGame) {
     class npc {

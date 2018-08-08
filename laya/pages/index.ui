@@ -2,7 +2,7 @@
     "x":0,
     "type":"Dialog",
     "selectedBox":1,
-    "selecteID":26,
+    "selecteID":39,
     "props":{"width":720,"sceneColor":"#ffffff","height":1280},
     "nodeParent":-1,
     "label":"Dialog",
@@ -12,19 +12,6 @@
     "hasChild":true,
     "compId":1,
     "child":[
-        {
-            "x":15,
-            "type":"Image",
-            "props":{"width":898,"skin":"index/vignette.png","rotation":0,"height":1572,"centerY":45,"centerX":5},
-            "nodeParent":1,
-            "label":"Image",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":26,
-            "child":[
-                ]
-        },
         {
             "x":15,
             "type":"Box",
@@ -254,7 +241,7 @@
                         }],
                     "$HIDDEN":false
                 }],
-            "$HIDDEN":false
+            "$HIDDEN":true
         },
         {
             "x":15,
@@ -280,7 +267,8 @@
                     "compId":11,
                     "child":[
                         ]
-                }]
+                }],
+            "$HIDDEN":true
         }],
     "animations":[
         {

@@ -25,6 +25,7 @@ var WetchGame;
             this.bgobj = []; // 背景节点数组
             this.gamestatus = true; //控制分数
             this._Fraction = "0"; //当前分数
+            this.animationobj = new WetchGame.animationUI(this);
             // 圆周运动
             this.Circumferential = {
                 angularVelocity: GLOB_Circumferential.angularVelocity,
@@ -92,7 +93,7 @@ var WetchGame;
                     this.scene2D = scene;
                     scene.stage.scaleMode = Laya.Stage.SCALE_EXACTFIT;
                     scene.stage.screenMode = Laya.Stage.SCREEN_NONE;
-                    console.log(scene);
+                    //console.log(scene);
                     scene.zOrder = 100;
                     this.loadAdn(); //开场动画
                     this.animation2D(); // 字体动画
@@ -102,8 +103,9 @@ var WetchGame;
                 AUDIO.play(TOOLS.getRandomInt(0, 2) ? "bg_1" : "bg_2");
                 /* 关闭全部运动 */
                 this.accelerate = this.whereabouts = false;
-                //倒计时
-                this.CountDown(() => { });
+                // this.animationobj.mask({type:1});
+                // this.animationobj.mask({type:1});
+                //this.CountDown(()=>{});
                 //new yftools.YFWindow("https://shop.yunfanshidai.com/xcxht/slyxhz/api/getothergamelist.php?gameid=4&openid=test");
             };
             /**
@@ -190,60 +192,6 @@ var WetchGame;
                 });
                 bannerAd.show();
                 setTimeout(data => { bannerAd.style.top = window.innerHeight - bannerAd.style.realHeight; }, 1000);
-            };
-            // 倒计时
-            this.CountDown = (callback) => {
-                let _size = {
-                    btn1: { w: Laya.stage.width / 2.5, h: Laya.stage.width / 2.5 },
-                    btn2: { w: Laya.stage.width / 2.5, h: Laya.stage.width / 1 }
-                }, _time = 500;
-                // 圆环
-                let target = new Laya.Sprite();
-                Laya.stage.addChild(target);
-                target.size(_size.btn1.w, _size.btn1.h);
-                target.pos(Laya.stage.width / 2 - _size.btn1.w / 2, Laya.stage.height / 4 - _size.btn1.h / 2);
-                target.zOrder = 101;
-                target.on(Laya.Event.CLICK, this, () => {
-                    console.log("hahah ");
-                });
-                // 按钮
-                let btn = new Laya.Sprite();
-                Laya.stage.addChild(btn);
-                btn.size(_size.btn2.w, _size.btn2.h);
-                btn.pos(Laya.stage.width / 2 - _size.btn2.w / 2 - 5, Laya.stage.height / 1.2 - _size.btn2.h / 2);
-                btn.zOrder = 101;
-                btn.on(Laya.Event.CLICK, this, () => {
-                    console.log("btn ");
-                });
-                var path = [
-                    ["moveTo", 30, 0],
-                    ["arcTo", 300, 0, 300, 30, 30],
-                    ["arcTo", 300, 100, 270, 100, 30],
-                    ["arcTo", 0, 100, 0, 70, 30],
-                    ["arcTo", 0, 0, 30, 0, 30],
-                ];
-                //绘制圆角矩形
-                btn.graphics.drawPath(0, 0, path, { fillStyle: "#ffffff" }, { "strokeStyle": "#1fbb25", "lineWidth": "10" });
-                btn.graphics.fillText("重新开始", _size.btn2.w / 2, _size.btn2.h / 2.5 - 300 + 35, "40px SimHei", "#1fbb25", "center");
-                // 圆环转动
-                let fun = () => {
-                    _time -= 1;
-                    target.graphics.clear();
-                    target.graphics.drawCircle(_size.btn1.w / 2, _size.btn1.h / 2, _size.btn1.w / 2, "#cccccc"); // 背景
-                    target.graphics.drawPie(_size.btn1.w / 2, _size.btn1.h / 2, _size.btn1.w / 2, 0, 360 * (_time / 500), "#1fbb25"); // 进度环
-                    target.graphics.drawCircle(_size.btn1.w / 2, _size.btn1.h / 2, _size.btn1.w / 2 - 40, "#ffffff");
-                    target.graphics.fillText("复活", _size.btn1.w / 2, _size.btn1.h / 2.5, "40px SimHei", "#1fbb25", "center");
-                    if (_time <= 1) {
-                        Laya.timer.clear(this, fun);
-                        console.log("结束");
-                        if (callback)
-                            callback();
-                        //target.destroy();
-                        //btn.destroy();
-                        return;
-                    }
-                };
-                Laya.timer.frameLoop(1, this, fun);
             };
             // 字体动画
             this.animation2D = () => {
@@ -744,6 +692,8 @@ var WetchGame;
                 this.ForceLineObj.transform.scale = new Laya.Vector3(1, 1, 1); // 关闭着力线
                 this.gamestatus = false; //关闭分数递增
                 this._RankingList(); //场景排行榜
+                //倒计时
+                this.animationobj.CountDown();
             }
         }
         /**

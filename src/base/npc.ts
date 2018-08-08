@@ -1,7 +1,4 @@
-/**
- *   主角类
- *   
- */
+// 主角类
 module WetchGame{
     export class npc{
         private ctx:Object
