@@ -1,8 +1,8 @@
 {
     "x":0,
     "type":"Dialog",
-    "selectedBox":1,
-    "selecteID":39,
+    "selectedBox":35,
+    "selecteID":5,
     "props":{"width":720,"sceneColor":"#ffffff","height":1280},
     "nodeParent":-1,
     "label":"Dialog",
@@ -54,158 +54,20 @@
                 },
                 {
                     "x":30,
-                    "type":"Image",
-                    "props":{"width":140,"var":"left_d","top":199,"skin":"index/d.png","name":"left_d","left":-299,"height":301},
-                    "nodeParent":14,
-                    "label":"Image(left_d)",
-                    "isDirectory":false,
-                    "isAniNode":true,
-                    "hasChild":false,
-                    "compId":37,
-                    "child":[
-                        ],
-                    "$HIDDEN":true
-                },
-                {
-                    "x":30,
-                    "type":"Image",
-                    "props":{"width":267,"var":"left_a","top":331,"skin":"index/k.png","name":"left_a","left":-300,"height":267},
-                    "nodeParent":14,
-                    "label":"Image(left_a)",
-                    "isDirectory":false,
-                    "isAniNode":true,
-                    "hasChild":false,
-                    "compId":25,
-                    "child":[
-                        ],
-                    "$HIDDEN":true
-                },
-                {
-                    "x":30,
-                    "type":"Image",
-                    "props":{"width":240,"var":"left_b","top":600,"skin":"index/f.png","name":"left_b","left":-300,"height":349},
-                    "nodeParent":14,
-                    "label":"Image(left_b)",
-                    "isOpen":true,
-                    "isDirectory":false,
-                    "isAniNode":true,
-                    "hasChild":false,
-                    "compId":20,
-                    "child":[
-                        ],
-                    "$HIDDEN":true
-                },
-                {
-                    "x":30,
-                    "type":"Image",
-                    "props":{"width":227,"var":"right_c","top":228,"skin":"index/j.png","name":"right_c","left":718,"height":144},
-                    "nodeParent":14,
-                    "label":"Image(right_c)",
-                    "isDirectory":false,
-                    "isAniNode":true,
-                    "hasChild":false,
-                    "compId":38,
-                    "child":[
-                        ],
-                    "$HIDDEN":true
-                },
-                {
-                    "x":30,
-                    "type":"Image",
-                    "props":{"width":204,"var":"right_a","top":344,"skin":"index/e.png","name":"right_a","left":718,"height":327},
-                    "nodeParent":14,
-                    "label":"Image(right_a)",
-                    "isDirectory":false,
-                    "isAniNode":true,
-                    "hasChild":false,
-                    "compId":16,
-                    "child":[
-                        ],
-                    "$HIDDEN":true
-                },
-                {
-                    "x":30,
-                    "type":"Image",
-                    "props":{"width":201,"var":"right_b","top":622,"skin":"index/g.png","name":"right_b","left":718,"height":363},
-                    "nodeParent":14,
-                    "label":"Image(right_b)",
-                    "isDirectory":false,
-                    "isAniNode":true,
-                    "hasChild":false,
-                    "compId":21,
-                    "child":[
-                        ],
-                    "$HIDDEN":true
-                },
-                {
-                    "x":30,
-                    "type":"Image",
-                    "props":{"width":128,"var":"left_c","top":753,"skin":"index/c.png","name":"left_c","left":-153,"height":120},
-                    "nodeParent":14,
-                    "label":"Image(left_c)",
-                    "isDirectory":false,
-                    "isAniNode":true,
-                    "hasChild":false,
-                    "compId":27,
-                    "child":[
-                        ],
-                    "$HIDDEN":true
-                },
-                {
-                    "x":30,
-                    "type":"Text",
-                    "props":{"y":860,"x":161,"var":"title","text":"按住可加速 松开可飞行","name":"title","fontSize":40,"font":"Microsoft YaHei","color":"#ffffff","bold":false,"alpha":1},
-                    "nodeParent":14,
-                    "label":"Text(title)",
-                    "isDirectory":false,
-                    "isAniNode":true,
-                    "hasChild":false,
-                    "compId":9,
-                    "child":[
-                        ],
-                    "$HIDDEN":true
-                },
-                {
-                    "x":30,
                     "type":"Box",
                     "props":{"x":36,"var":"btn_groug","top":1280,"name":"btn_groug"},
                     "nodeParent":14,
                     "label":"Box(btn_groug)",
-                    "isOpen":false,
+                    "isOpen":true,
                     "isDirectory":true,
                     "isAniNode":true,
                     "hasChild":true,
                     "compId":35,
                     "child":[
                         {
+                            "x":45,
                             "type":"Image",
-                            "props":{"y":188,"x":200,"skin":"index/sbtn_2.png"},
-                            "nodeParent":35,
-                            "label":"Image",
-                            "isOpen":false,
-                            "isDirectory":true,
-                            "isAniNode":true,
-                            "hasChild":true,
-                            "compId":30,
-                            "child":[
-                                {
-                                    "type":"Image",
-                                    "props":{"y":-109,"x":-102,"skin":"index/sbtn_1.png"},
-                                    "nodeParent":30,
-                                    "label":"Image",
-                                    "isOpen":true,
-                                    "isDirectory":false,
-                                    "isAniNode":true,
-                                    "hasChild":false,
-                                    "compId":29,
-                                    "child":[
-                                        ]
-                                }],
-                            "$HIDDEN":false
-                        },
-                        {
-                            "type":"Image",
-                            "props":{"y":66,"width":170,"var":"setup","skin":"index/gamelist.png","name":"setup","height":120},
+                            "props":{"y":77,"x":30,"width":100,"var":"setup","skin":"index/frans.png","name":"setup","height":120},
                             "nodeParent":35,
                             "label":"Image(setup)",
                             "isDirectory":false,
@@ -216,8 +78,9 @@
                                 ]
                         },
                         {
+                            "x":45,
                             "type":"Image",
-                            "props":{"y":66,"x":479,"width":173,"var":"skin","skin":"index/shop.png","name":"skin","height":120},
+                            "props":{"y":78,"x":530,"width":100,"var":"skin","skin":"index/skin.png","name":"skin","height":120},
                             "nodeParent":35,
                             "label":"Image(skin)",
                             "isDirectory":false,
@@ -228,8 +91,9 @@
                                 ]
                         },
                         {
+                            "x":45,
                             "type":"Button",
-                            "props":{"x":169,"width":314,"var":"start","stateNum":"1","skin":"index/begin.png","name":"start","height":197},
+                            "props":{"y":69,"x":169,"width":320,"var":"start","stateNum":"1","skin":"index/stat.png","name":"start","height":130},
                             "nodeParent":35,
                             "label":"Button(start)",
                             "isDirectory":false,
@@ -240,8 +104,34 @@
                                 ]
                         }],
                     "$HIDDEN":false
+                },
+                {
+                    "x":30,
+                    "type":"Image",
+                    "props":{"y":35,"x":31,"var":"audio","skin":"index/audio_on.png","name":"audio"},
+                    "nodeParent":14,
+                    "label":"Image(audio)",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":39,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"Image",
+                    "props":{"y":32,"x":141,"width":63,"skin":"index/shock.png","height":69},
+                    "nodeParent":14,
+                    "label":"Image",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":40,
+                    "child":[
+                        ]
                 }],
-            "$HIDDEN":true
+            "$HIDDEN":false
         },
         {
             "x":15,
@@ -249,14 +139,13 @@
             "props":{"y":158,"x":340,"var":"game","name":"game"},
             "nodeParent":1,
             "label":"Box(game)",
-            "isOpen":true,
+            "isOpen":false,
             "isDirectory":true,
             "isAniNode":true,
             "hasChild":true,
             "compId":15,
             "child":[
                 {
-                    "x":30,
                     "type":"FontClip",
                     "props":{"y":8,"x":2,"visible":false,"var":"Fraction","value":"0","skin":"index/num.png","sheet":"0123456789","name":"Fraction"},
                     "nodeParent":15,

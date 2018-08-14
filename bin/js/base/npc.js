@@ -2,19 +2,20 @@
 var WetchGame;
 (function (WetchGame) {
     class npc {
-        constructor(ctx, skingroup = null) {
-            this.init = (target = this.ctx, skin = null) => {
-                let target_cube = target.addChild(new Laya.MeshSprite3D(new Laya.SphereMesh(0.15, 8, 8)));
-                var material = new Laya.StandardMaterial();
-                if (!!skin) {
-                    material.diffuseTexture = Laya.Texture2D.load(this.skingroup[skin]);
+        constructor(ctx) {
+            this.init = (data) => {
+                if (!data || !("skin" in data) || !("scene" in data)) {
+                    console.log("error =>class npc", "参数不对");
                 }
                 else {
-                    material.diffuseTexture = Laya.Texture2D.load("res/image/color/football.jpg");
+                    var sprite3D = Laya.Sprite3D.load(data.skin);
+                    this.ME = sprite3D;
+                    sprite3D.on(Laya.Event.HIERARCHY_LOADED, this, () => {
+                        sprite3D.transform.position = new Laya.Vector3(0.8, 7, 0);
+                        sprite3D.transform.localScale = new Laya.Vector3(.1, .1, .1);
+                    });
+                    data.scene.addChild(this.ME);
                 }
-                target_cube.meshRender.material = material;
-                target_cube.transform.position = new Laya.Vector3(0.8, 7, 0);
-                return target_cube;
             };
             this.over = data => {
             };
@@ -23,7 +24,6 @@ var WetchGame;
             this.Destroy = data => {
             };
             this.ctx = ctx;
-            this.skingroup = skingroup;
         }
     }
     WetchGame.npc = npc;

@@ -52,11 +52,7 @@ var TOOLS = {
             return cube;
         }
         else {
-            var box = new Laya.MeshSprite3D(new Laya.BoxMesh(CubeSize.X, CubeSize.Y, CubeSize.Z));
-            var material = new Laya.StandardMaterial();
-            material.diffuseTexture = Laya.Texture2D.load(cubeTexture[texture.Checkpoint][texture.imgType]);
-            box.meshRender.material = material;
-            return box;
+            //return box;
         }
     },
     // 获取圆柱体
@@ -126,6 +122,29 @@ var TOOLS = {
             };
             ajax.send();
         });
+    },
+    // 获取json数据
+    getJSON: url => {
+        let promise = new Promise(function (resolve, reject) {
+            let handler = function () {
+                if (this.readyState !== 4)
+                    return;
+                if (this.status === 200) {
+                    resolve(this.response);
+                }
+                else {
+                    reject(new Error(this.statusText));
+                }
+                ;
+            };
+            let client = new XMLHttpRequest();
+            client.open("GET", url);
+            client.onreadystatechange = handler;
+            client.responseType = "json";
+            client.setRequestHeader("Accept", "application/json");
+            client.send();
+        });
+        return promise;
     },
     // 随机算法
     getRandomInt: function (min, max) {

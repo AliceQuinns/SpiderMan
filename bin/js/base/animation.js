@@ -1,9 +1,9 @@
-// 动画ui类
+// 动画与UI类
 var WetchGame;
 (function (WetchGame) {
     class animationUI {
         constructor(ctx) {
-            // 复活倒计时动画
+            // 复活倒计时界面
             this.CountDown = (data = null) => {
                 let _size = {
                     btn1: { w: Laya.stage.width / 2.5, h: Laya.stage.width / 2.5 },
@@ -53,30 +53,51 @@ var WetchGame;
                 };
                 Laya.timer.frameLoop(1, this, fun);
             };
-            // 渐变遮罩
-            this.mask = (data = null) => {
-                if (!data)
-                    return;
-                if (!this.maskobj) {
-                    console.log("新建mask对象");
-                    this.maskobj = new Laya.Sprite();
-                    this.maskobj.size(Laya.stage.width, Laya.stage.height);
-                    this.maskobj.pos(0, 0);
-                    Laya.stage.addChild(this.maskobj);
+            // 3d场景
+            this.initScene = () => {
+                let bgobj = [];
+                //添加3D场景
+                var scene = Laya.stage.addChild(new Laya.Scene());
+                //添加摄像机
+                var camera = (scene.addChild(new Laya.Camera(0, 0.1, 100)));
+                camera.transform.translate(new Laya.Vector3(-1, 10, 6), false);
+                camera.transform.localRotationEuler = new Laya.Vector3(-15, -25, 2);
+                camera.clearColor = new Laya.Vector4(1, 1, 1, 1);
+                //平行光
+                var directionLight = scene.addChild(new Laya.DirectionLight());
+                directionLight.direction = new Laya.Vector3(2, -2, -3);
+                for (let i = 0; i < 3; i++) {
+                    //添加背景
+                    var bottombox = scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(bgsize.X, bgsize.Y, bgsize.Z)));
+                    var material = new Laya.StandardMaterial();
+                    material.diffuseTexture = Laya.Texture2D.load("res/image/color/floor.png");
+                    bottombox.meshRender.material = material;
+                    bottombox.transform.position = new Laya.Vector3(5 + bgsize.X * i, 0, -10);
+                    bgobj.push(bottombox);
                 }
-                if (data.type === 1) {
-                }
-                else if (data.type === 2) {
-                }
-                else if (data.type === 3) {
-                }
-                else if (data.type === 4) {
-                    console.log("删除mask对象");
-                    Laya.stage.removeChild(this.maskobj);
-                    this.maskobj.destroy();
-                }
+                //开启雾化效果
+                scene.enableFog = true;
+                //设置雾化的颜色
+                scene.fogColor = new Laya.Vector3(1, 1, 1);
+                //设置雾化的起始位置，相对于相机的距离
+                scene.fogStart = 10;
+                //设置雾化最浓处的距离。
+                scene.fogRange = 50;
+                return {
+                    scene: scene,
+                    camera: camera,
+                    directionLight: directionLight,
+                    bgobj: bgobj
+                };
             };
-            this.ctx = ctx;
+            // index界面
+            this.indexUI = () => {
+                let scene = Laya.stage.addChild(new ui.indexUI);
+                scene.stage.scaleMode = Laya.Stage.SCALE_EXACTFIT;
+                scene.stage.screenMode = Laya.Stage.SCREEN_NONE;
+                scene.zOrder = 100;
+                return scene;
+            };
         }
     }
     WetchGame.animationUI = animationUI;

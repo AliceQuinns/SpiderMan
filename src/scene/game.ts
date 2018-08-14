@@ -8,20 +8,20 @@
 module WetchGame{
     export class gameScene{
         private Game_scene:Laya.Scene; // 3D场景
-        private scene2D: Laya.Scene;// 2D场
+        private scene2D: Laya.Scene;// 2D场景
         private directionLight;// 灯光
         private camera:Laya.Camera; // 摄像机
         private Cube_number:number=0; // 位置
         private Router_game = null; // 游戏的路由表
         private cube_bg_type:boolean = true; // 贴图控制
-        private Lead_cube:Laya.MeshSprite3D = null; // 主角模型
-        private Circular_obj:Laya.MeshSprite3D = null;// 着力点对象
+        private Lead_cube:Laya.Sprite3D = null; // 主角模型
+        private Circular_obj= null;// 着力点对象
         private FourcePointRouter:any = [];//着力点路由表
         private FoucePointIndex:number = 0;// 记录当前着力点的下标
         private ForceLineObj:Laya.MeshSprite3D;// 着力线对象
         private accelerate:boolean=false;// 圆周运动开关
         private whereabouts:boolean=false;// 斜抛运动开关
-        private LeadLoop:boolean=true;// 单摆运动开关
+        private LeadLoop:boolean=false;// 单摆运动开关
         private collision:boolean=false;//碰撞检测开关
         private eventControl:boolean=true;//事件控制开关
         private foucePos:any;//着力点坐标
@@ -33,7 +33,17 @@ module WetchGame{
         private bgobj = [];// 背景节点数组
         private gamestatus:boolean=true;//控制分数
         private _Fraction:string="0";//当前分数
-        private animationobj = new WetchGame.animationUI(this);
+
+        private animationobj:WetchGame.animationUI;// 动画与UI
+        private npc:WetchGame.npc;// 主角
+        private gameState:WetchGame.gameState;// 游戏状态
+        private Propobj:WetchGame.Propobj;// 方块 道具 激光
+        private Shopping:WetchGame.Shopping;// 商城模块 微信功能模块
+
+        private dataform:number = 1;// 当前使用配置表id
+        private dataInfoArray = [];// 激光点信息表
+        private _index = 0;// 激光点记录位
+
         // 圆周运动
         private Circumferential:any={
             angularVelocity: GLOB_Circumferential.angularVelocity,// 角速度
@@ -54,93 +64,116 @@ module WetchGame{
         }
 
         constructor(){
-           /* 加载2d资源 */
            Laya.loader.load([
             "res/atlas/index.atlas"
-           ],Laya.Handler.create(this,this.Main2D));
+           ],Laya.Handler.create(this,this.main));
         }
 
-/**
- * 
- *  main
- * 
- */
 
-/* 远程获取Router表 */
-private Main2D=()=>{
-    let data = this.configure();
-    if(data.status){
-        // 远程请求
-        console.log("请求配置表成功");
-        this.Router_game = Array.from(data.data);
-        this.Main3D();
-    }else{
-        // 本地请求
-        Laya.loader.load("res/router/Router.json",Laya.Handler.create(this,()=>{
-            this.Router_game = Array.from(Laya.Loader.getRes('res/router/Router.json').data);
+private main=()=>{
+
+    this.animationobj =  new WetchGame.animationUI(this);
+    this.gameState =  new WetchGame.gameState(this);
+    this.Propobj = new WetchGame.Propobj(this);
+    this.npc = new WetchGame.npc(this);
+    this.Shopping = new WetchGame.Shopping(this);
+
+    // let request = TOOLS.Ajax(`https://shop.yunfanshidai.com/xcxht/pqxcx/conf/${this.dataform}.json`);
+    // request.then(data => {
+    //     this.Router_game = JSON.parse(Object(data)).data;
+    //     this.dataFormat(JSON.parse(Object(data)).data);
+    //     this.Main3D();
+    //     this.dataform+=1;
+    // });
+    // request.catch(err => {
+    //     Laya.loader.load("res/router/Router2.json",Laya.Handler.create(this,()=>{
+    //         this.Router_game = Array.from(Laya.Loader.getRes('res/router/Router2.json').data);
+    //         this.dataFormat(this.Router_game);
+    //         this.Main3D();
+    //     }));
+    // });
+    Laya.loader.load("res/router/Router2.json",Laya.Handler.create(this,()=>{
+            let _ = Laya.Loader.getRes('res/router/Router2.json');
+            this.Router_game = Array.from(_.data);
+            this.dataFormat(this.Router_game);
             this.Main3D();
         }));
-    }
 }
 
-/* 绘制3D场景 */
+// 创建类对象
 private Main3D=()=>{
     let self = this;
-    /* 渲染开放数据域场景 */
-    //self.renderCanvas();
-    /* 绘制3D场景 */
-    self.initScene();
-    /* 创建主角 */
-    self.Lead();
-    /* 初始化着力点 */ 
-    self.Circular_point_obj();
-    /* 初始着力线 */
-    self.ForceLineMain("init");
+    this.accelerate = this.whereabouts = false;
+
+    // 3D场景
+    let _ = this.animationobj.initScene();
+    this.Game_scene = _.scene;
+    this.camera = _.camera;
+    
+    // 主角模型
+    this.npc.init({scene:_.scene,skin:this.gameState.get("npc").LEADSKIN.car1.model});
+    this.Lead_cube = this.npc.ME;
+
+    // 激光线和激光点
+    this.Propobj.init();
+    this.Circular_obj = this.Propobj.Laserpoint;
+    this.ForceLineObj = this.Propobj.Laserline;
+    
     /* 渲染初始立方体 */
-    self.RenderCube(20);
+    self.RenderCube(3); 
+
     /* 渲染第一条着力线 */
-    self.forceLine();
+    // self.forceLine();
+    
     /* update */
-    self.updata();
+    //self.updata();
     /* 全局对象 */
     self.Global_obj();
+
     // 执行摄像机动画并绘制2d场景
     this.cameraAnimation(()=>{
-        let scene = Laya.stage.addChild(new ui.indexUI) as Laya.Scene;
-        this.scene2D = scene;
-        scene.stage.scaleMode = Laya.Stage.SCALE_EXACTFIT;
-        scene.stage.screenMode = Laya.Stage.SCREEN_NONE;
-        //console.log(scene);
-        scene.zOrder = 100;
+        this.scene2D = this.animationobj.indexUI();
         this.loadAdn();//开场动画
-        this.animation2D();// 字体动画
+        //this.animation2D();// 字体动画
         this.startGame();// 开始游戏按钮
     });
     /* 播放背景音乐 */
     AUDIO.play(TOOLS.getRandomInt(0,2)?"bg_1":"bg_2");
-    /* 关闭全部运动 */
-    this.accelerate = this.whereabouts = false; 
+    
+    // 更多游戏跳转
+
     // this.animationobj.mask({type:1});
     // this.animationobj.mask({type:1});
     //this.CountDown(()=>{});
     //new yftools.YFWindow("https://shop.yunfanshidai.com/xcxht/slyxhz/api/getothergamelist.php?gameid=4&openid=test");
 }
 
+// 数据格式化
+private dataFormat = data => {
+    let _ = [],count=0;
+    // 存在已用数据时叠加index下标
+    if(this.dataInfoArray.length>0){
+        let _ = this.dataInfoArray[this.dataInfoArray.length-1];
+        count = _[_.length-1].index+1;
+    };
+    data.forEach((element,index) => {
+        element.index = index+count;
+        _.push(element);
+        if(!!element.skill&&element.skill === "1"){
+            this.dataInfoArray.push(_);
+            _ = [];
+        };
+    });
+}
 
-/**
- * 
- * 2d场景操作
- * 
- */
-
-private startGame=()=>{
+private startGame= () =>{
     let setup = this.scene2D.getChildByName("home").getChildByName("btn_groug").getChildByName("setup") as Laya.Button;
     let btn =  this.scene2D.getChildByName("home").getChildByName("btn_groug").getChildByName("start") as Laya.Button;
     // 开始游戏
     btn.on(Laya.Event.CLICK,this,(e)=>{
         btn.offAll();// 防止重复点击
         e.stopPropagation();
-        let leadpos = new Laya.Vector3(0.8,7,0);// 默认主角位置
+        let leadpos = this.gameState.get("npc").statpos;// 主角初始位置
         let pos = this.Lead_cube.transform.position;// 当前主角位置
         var x = pos.x-leadpos.x,y=pos.y-leadpos.y;// 主角位置偏移
         var a=0,b=0,time=100;
@@ -301,44 +334,7 @@ private Wxcanvas=(target)=>{
  * 
  */
 
-// 绘制初始场景
-private initScene = ()=>{
-    //添加3D场景
-    var scene: Laya.Scene = Laya.stage.addChild(new Laya.Scene()) as Laya.Scene;
-    this.Game_scene = scene;
 
-    //添加摄像机
-    var camera: Laya.Camera = (scene.addChild(new Laya.Camera(0, 0.1, 100))) as Laya.Camera;
-    camera.transform.translate(new Laya.Vector3(-1, 10, 6),false);
-    camera.transform.localRotationEuler = new Laya.Vector3(-15,-25,2);
-    camera.clearColor = new Laya.Vector4(1, 1, 1, 1);
-    this.camera = camera;
-
-    //平行光
-    var directionLight: Laya.DirectionLight = scene.addChild(new Laya.DirectionLight()) as Laya.DirectionLight;
-    directionLight.direction = new Laya.Vector3(2,-2,-3);
-    this.directionLight = directionLight;
-
-    for(let i=0;i<3;i++){
-        //添加背景
-        var bottombox: Laya.MeshSprite3D = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(bgsize.X, bgsize.Y, bgsize.Z))) as Laya.MeshSprite3D;
-        var material: Laya.StandardMaterial = new Laya.StandardMaterial();
-        material.diffuseTexture = Laya.Texture2D.load("res/image/color/floor.png");
-        bottombox.meshRender.material = material;
-        bottombox.transform.position=new Laya.Vector3(5+bgsize.X*i,0,-10);
-        // bottombox.transform.localRotationEuler = new Laya.Vector3(0,0,0);
-        this.bgobj.push(bottombox);
-    }
-
-    //开启雾化效果
-    scene.enableFog = true;
-    //设置雾化的颜色
-    scene.fogColor = new Laya.Vector3(1,1,1);
-    //设置雾化的起始位置，相对于相机的距离
-    scene.fogStart = 10;
-    //设置雾化最浓处的距离。
-    scene.fogRange = 50;
-}
 
 /**
  * 
@@ -451,10 +447,10 @@ private _FocusPoint=(LeadPosition)=>{
     let pos = this._getFocecontent(this.FoucePointIndex);// 下一个着力点坐标
     let beforePos = this._getFocecontent(this.FoucePointIndex-1);// 上一个着力点坐标
     let size = TOOLS.getline(pos,LeadPosition);// 计算主角和着力点的距离
-    if(LeadPosition.x<=(beforePos.x+(CubeSize.X/2))){
+    if(LeadPosition.x<=(beforePos.x+(this.Propobj.CubeSize.X/2))){
         // 未超过上一个着力点
         value= beforePos;
-    }else if(LeadPosition.x>=pos.x||pos.x-LeadPosition.x<=(CubeSize.X/2)){
+    }else if(LeadPosition.x>=pos.x||pos.x-LeadPosition.x<=(this.Propobj.CubeSize.X/2)){
         // 超过着力点
         this.FoucePointIndex++;
         var a=this._FocusPoint(LeadPosition); 
@@ -499,16 +495,7 @@ private FoceAnimation = (pos)=>{
     this.ForceLineObj.transform.localRotationEuler = new Laya.Vector3(0,0,angleLead);
 }
 
-// 创建着力点
-private Circular_point_obj=()=>{
-    var box: Laya.MeshSprite3D = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(0.1, 0.1, 0.1))) as Laya.MeshSprite3D;
-    var material: Laya.StandardMaterial = new Laya.StandardMaterial();
-    material.diffuseTexture = Laya.Texture2D.load(Circular_point_texture[0]);
-    box.meshRender.material = material;
-    box.transform.position = new Laya.Vector3(0,0,0);
-    this.Circular_obj = box;
-    //console.log(this.FourcePointRouter);
-}
+
 
 /**
  * 
@@ -556,10 +543,10 @@ private bgInfiniteRelay = (val)=>{
 // 方块回收与创建
 private cubectr = (val)=>{
     this.pollctr+=val;
-    if(this.pollctr>=CubeSize.X){
+    if(this.pollctr>=this.Propobj.CubeSize.X){
         if(Laya.stage._childs[0]._childs.length>=40){
             for(let i = 10;i--;){
-                Laya.stage._childs[0]._childs[8].destroy();
+                //Laya.stage._childs[0]._childs[8].destroy();
             }
         }
         this.RenderCube(2);// 创建方块
@@ -571,100 +558,79 @@ private cubectr = (val)=>{
 private configure = ()=>{
     let _ = {data:null,status:null};
     if(!!SERVERURL||!!window["SERVERURL"]){
-        var data = TOOLS.Ajax(SERVERURL);
-        data.then(res=>{
-            _.data=res;
-            _.status=true;
-        }).catch(err=>{
-            _.status=false;
-        })
+       // var data = TOOLS.Ajax(SERVERURL);
+        // data.then(res=>{
+        //     _.data=res;
+        //     _.status=true;
+        // }).catch(err=>{
+        //     _.status=false;
+        // })
     }else{
        _.status=false;
     };
     return _;// 返回状态
 }
 
-// 立方体生成
 private RenderCube = (size:number):void=>{
-    let self = this;
-    //console.log(self.Cube_number);
-    for(let i=size;i--;){
-        if(self.Cube_number>=self.Router_game.length||!self.Router_game[self.Cube_number]){
-            /* 配置读取完毕 */ 
-            console.log(self.Cube_number,"配置读取完毕");
-            let data = this.configure();
-            if(data.status){
-                // 远程请求
-                this.Router_game = this.Router_game.concat(data.data);
-            }else{
-                // 合并本地数据
-                this.Router_game = this.Router_game.concat(this.Router_game);
-            }
-            this.RenderCube(i);
-        }else{
-            (self.Cube_number%2 === 0)
-            ?
-                self.AddBox(0,self.Cube_number)// 偶数在下
-            :
-                self.AddBox(1,self.Cube_number);// 奇数在上
-            self.Cube_number++;
-        }
+    if(this.dataInfoArray.length-(this._index+size)<=5){
+        let request = TOOLS.Ajax(`https://shop.yunfanshidai.com/xcxht/pqxcx/conf/${this.dataform}.json`);
+        request.then(data => {
+            this.dataFormat(JSON.parse(Object(data)).data);
+            this.dataform+=1;
+            // console.log("服务器请求 第",this.dataform,"份配置","当前数据表",this.dataInfoArray);            
+        });
+        request.catch(err => {
+            Laya.loader.load("res/router/Router2.json",Laya.Handler.create(this,()=>{
+                this.dataFormat(Array.from(Laya.Loader.getRes('res/router/Router2.json').data));
+                // console.log("本地文件读取 第",this.dataform,"份配置","当前数据表",this.dataInfoArray);
+            }));
+        });
     }
+    for(let i = size;i--;){
+        let data;
+        if(this._index>=this.dataInfoArray.length){
+            console.log("注意！！！！ 出现数据溢出 正尝试读取往前数据");
+            data = this.dataInfoArray[this.dataInfoArray.length-1];
+            this.dataInfoArray[this.dataInfoArray.length-1].index+=1;
+        } else {
+            data = this.dataInfoArray[this._index];
+        }
+        data.forEach(element => {
+            this.AddBox(element);
+        });
+        this._index+=1;
+    } 
 }
 
-// 单个立方体
-private AddBox = (type:number=null,index:number)=>{
-    let box = TOOLS.pullCube({Checkpoint:0,imgType:(this.cube_bg_type)?0:1});//从对象池请求立方体
-    this.Game_scene.addChild(box);//添加立方体
-    //console.log(this.Router_game[index]);
-    let height = Number(this.Router_game[index].hp);// 获取立方体高度
-    if(type === 0){
-        // 下部
-        let Box_X = (index+2)/2*CubeSize.X; 
-        let Box_Y = (CubeSize.Z/2)+height;
+private AddBox = data => {
+    let box = this.Propobj.pullcube((this.cube_bg_type)?"top":"bottom"),
+        index = data.index,
+        height = Number(data.hp);
+    this.Game_scene.addChild(box);
+    if(!box)console.log("无法从对象池请求对象");
+
+    if(index%2 === 0){
+        let Box_X = (index+2)/2*this.Propobj.CubeSize.X; 
+        let Box_Y = (this.Propobj.CubeSize.Z/2)+height;
         box.transform.translate(new Laya.Vector3(Box_X,Box_Y,0));
-        this.cube_bg_type = !this.cube_bg_type
+        this.cube_bg_type = !this.cube_bg_type;
     }else{
-        // 上部
-        let targetIndex = (index+1)/2;//计算当前数据为第几位奇数
-        let Box_X = targetIndex*CubeSize.X;
-        let Box_Y = CubeSize.Z+height+((CubeSize.Z/2)+Number(this.Router_game[index-1].hp));
-        // 判断当前立方体是否有着力点
-        if(!!this.Router_game[index].skill&&Number(this.Router_game[index].skill)===1){
+        let Box_X = ((index+1)/2)*this.Propobj.CubeSize.X;
+        let Box_Y = (this.Propobj.CubeSize.Z/2)+height;
+        // 激光点
+        if(!!data.skill&&Number(data.skill)===1){
             this.FourcePointRouter.push({
-                point: {x:Box_X,y:Box_Y-(CubeSize.Z/2)},//着力点坐标
+                point: {x:Box_X,y:Box_Y-(this.Propobj.CubeSize.Z/2)},//着力点坐标
                 data_index: index,// 数据索引
             })
         }; 
+        // 道具
+        if(!!data.drop){
+            console.log("绘制道具",data.drop);
+        }
         box.transform.translate(new Laya.Vector3(Box_X,Box_Y,0));
     }
 }
-
-/**
- * 
- * 主角控制
- * 
- */
-
-// 创建主角
-private Lead = ()=>{
-    // let target_cube = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.SphereMesh(0.15, 8, 8))) as Laya.MeshSprite3D;
-    // var material: Laya.StandardMaterial = new Laya.StandardMaterial();
-    // material.diffuseTexture = Laya.Texture2D.load("res/image/color/football.jpg");
-    // target_cube.meshRender.material = material;
-    // target_cube.transform.position = new Laya.Vector3(0.8,7,0);
-    // // material.albedo=new Laya.Vector4(1,1,2,0.3);
-    // // material.renderMode = Laya.StandardMaterial.RENDERMODE_DEPTHREAD_TRANSPARENTDOUBLEFACE;
-    // this.Lead_cube = target_cube;
-    let target = new WetchGame.npc(this.Game_scene,[]);
-    this.Lead_cube = target.init(this.Game_scene);
-}
-
-/**
- * 
- * 分数递增
- * 
- */
 
 private fractoinatr = ()=>{
      // 分数控制逻辑
@@ -710,16 +676,16 @@ private SlantingMotion(angle:number,time:number,speed:number,scale:number=1){
  */
 
 private collisionDetection(pos){
-    let i = Math.round(pos.x/CubeSize.X);
+    let i = Math.round(pos.x/this.Propobj.CubeSize.X);
     if(i<=0)i = 1;
     let top = 2*i-1;//上方数据索引
     let bottom = top-1;//下方数据索引
     let max = Number(this.Router_game[top].hp);// 上部数据
     let min = Number(this.Router_game[bottom].hp);// 下部数据
-    let toppos = new Laya.Vector3(0,CubeSize.Z+max+((CubeSize.Z/2)+min),0);
-    let bottompos = new Laya.Vector3(0,(CubeSize.Z/2)+min,0);
-    let max_height = toppos.y-(CubeSize.Z/2);// 最高高度 上部
-    let min_height = bottompos.y+(CubeSize.Z/2);// 最低高度 下部
+    let toppos = new Laya.Vector3(0,this.Propobj.CubeSize.Z+max+((this.Propobj.CubeSize.Z/2)+min),0);
+    let bottompos = new Laya.Vector3(0,(this.Propobj.CubeSize.Z/2)+min,0);
+    let max_height = toppos.y-(this.Propobj.CubeSize.Z/2);// 最高高度 上部
+    let min_height = bottompos.y+(this.Propobj.CubeSize.Z/2);// 最低高度 下部
     if(pos.y>=max_height||pos.y<=min_height){
         // console.log(`第${i}个    ${top}    ${bottom}  ${toppos}   ${bottompos}`);
         // 结束游戏
@@ -818,7 +784,7 @@ private updata(type=null){
             this.collisionDetection(pos);
         }   
         // 主角动画
-        this.Lead_cube.transform.rotate(new Laya.Vector3(.1,.1,.1));
+        //this.Lead_cube.transform.rotate(new Laya.Vector3(.1,.1,.1));
     }
     Laya.timer.frameLoop(1,this,callback);
 }

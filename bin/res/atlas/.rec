@@ -1,21 +1,15 @@
 D .
 D index
-R AF9CCC17 audio_on.png
-P D0BEF57B begin.png
+R 854DB02A audio_off.png
+P AF9CCC17 audio_on.png
 P B5732CA2 btn_play_againx.png
-P EB03AD22 c.png
-P 8965E133 d.png
-P 809E8680 e.png
-P 0190CB2B f.png
-P 381C95A5 g.png
-P 0489A6AA gamelist.png
+P 371058DE frans.png
 P 2458FC8D i.png
-P E8A438C6 j.png
-P 7FC3C11E k.png
 P 43CBF2DA logo.png
 P 4D80C1F3 num.png
-P 66141A36 sbtn_1.png
-P 83D66F8A sbtn_2.png
+R 4894257B Rankings.png
 P 84811870 share.png
-P D5075567 shop.png
+P A6EA1275 shock.png
+P 2DC183CF skin.png
+P 02208E21 stat.png
 R 562095CB vignette.png
