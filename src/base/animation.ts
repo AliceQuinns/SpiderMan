@@ -64,7 +64,7 @@ module WetchGame {
 
             //添加摄像机
             var camera: Laya.Camera = (scene.addChild(new Laya.Camera(0, 0.1, 100))) as Laya.Camera;
-            camera.transform.translate(new Laya.Vector3(-1, 10, 6), false);
+            camera.transform.position = new Laya.Vector3(-1, 10, 6);
             camera.transform.localRotationEuler = new Laya.Vector3(-15, -25, 2);
             camera.clearColor = new Laya.Vector4(1, 1, 1, 1);
 

@@ -1,21 +1,21 @@
-// 方块 激光线 道具对象
+// 方块 道具
 var WetchGame;
 (function (WetchGame) {
     class Propobj {
         constructor(ctx) {
             this.CubeLength = 20;
             this.CubeSize = { X: 0.8, Y: 0.5, Z: 5 };
+            this.Cubelist = []; // 方块池
+            this.proplist = []; // 道具池
             this.texturelist = [
                 "res/image/color/stone.png",
                 "res/image/color/stone2.png"
             ];
             // 道具
             this.balltexture = [
-                "res/image/model/ball/Ball1.lh",
-                "res/image/model/ball/Ball2.lh",
-                "res/image/model/ball/Ball3.lh",
-                "res/image/model/ball/Ball4.lh",
-                "res/image/model/ball/Ball5.lh",
+                "https://shop.yunfanshidai.com/xcxht/pqxcx/conf/prop/Sign_1.lh",
+                "https://shop.yunfanshidai.com/xcxht/pqxcx/conf/prop/Sign_2.lh",
+                "https://shop.yunfanshidai.com/xcxht/pqxcx/conf/prop/Sign_3.lh"
             ];
             this.init = () => {
                 // 创建激光点
@@ -31,8 +31,8 @@ var WetchGame;
                 material.albedo = new Laya.Vector4(1, 1, 2, 0.3);
                 material.renderMode = Laya.StandardMaterial.RENDERMODE_DEPTHREAD_TRANSPARENTDOUBLEFACE;
                 box2.meshRender.material = material;
-                // 创建方块仓库队列
-                var list = [[], []];
+                // 创建方块队列
+                let list = [[], []];
                 for (let i = this.CubeLength; i--;) {
                     if (i < this.CubeLength / 2) {
                         list[0].push(this.createCube("bottom"));
@@ -40,6 +40,15 @@ var WetchGame;
                     else {
                         list[1].push(this.createCube("top"));
                     }
+                }
+                // 创建道具队列
+                for (let i = 0; i < this.balltexture.length; i++) {
+                    var sprite3D = Laya.Sprite3D.load(this.balltexture[i]);
+                    sprite3D.on(Laya.Event.HIERARCHY_LOADED, this, () => {
+                        sprite3D.transform.position = new Laya.Vector3(0, 0, 0);
+                        sprite3D.transform.localScale = new Laya.Vector3(.3, .3, .3);
+                    });
+                    this.proplist.push([sprite3D]);
                 }
                 this.Laserpoint = box1;
                 this.Laserline = box2;
@@ -72,7 +81,22 @@ var WetchGame;
                 data.transform.position = new Laya.Vector3(0, 0, 0);
                 return data;
             };
-            this.renderLaser = data => {
+            // 获取道具
+            this.getProp = (type, pos) => {
+                let target = this.proplist[Number(type)], obj;
+                if (target.length <= 0) {
+                    let sprite3D = Laya.Sprite3D.load(this.balltexture[Number(data)]);
+                    sprite3D.on(Laya.Event.HIERARCHY_LOADED, this, () => {
+                        sprite3D.transform.position = new Laya.Vector3(0, 0, 0);
+                        sprite3D.transform.localScale = new Laya.Vector3(.3, .3, .3);
+                    });
+                    this.proplist[Number(type)].push([sprite3D]);
+                    obj = sprite3D;
+                }
+                else {
+                    obj = target[0];
+                }
+                return obj;
             };
             this.ctx = ctx;
         }

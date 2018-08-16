@@ -14,8 +14,7 @@ module WetchGame {
                 var sprite3D: Laya.Sprite3D = Laya.Sprite3D.load(data.skin);
                 this.ME = sprite3D;
                 sprite3D.on(Laya.Event.HIERARCHY_LOADED, this, () => {
-                    sprite3D.transform.position = new Laya.Vector3(0.8, 7, 0);
-                    sprite3D.transform.localScale = new Laya.Vector3(.1, .1, .1);
+                    sprite3D.transform.position = new Laya.Vector3(0,0,0);
                 });
                 data.scene.addChild(this.ME);
             }

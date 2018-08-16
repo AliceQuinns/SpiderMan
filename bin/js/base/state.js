@@ -21,6 +21,9 @@ var WetchGame;
                     car3: {
                         model: "res/image/model/carModel/car3.lh",
                         img: "",
+                    },
+                    car4: {
+                        model: "res/image/model/Lead/Cube.lh"
                     }
                 },
                 boundingBoxSize: new Laya.Vector3(0.8, 7, 0),
