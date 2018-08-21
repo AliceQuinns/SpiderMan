@@ -11,7 +11,7 @@ class LayaAir3D {
         Laya.stage.scaleMode = "fixedwidth";
         Laya.stage.screenMode = "none";
         //开启统计信息
-        Laya.Stat.show();
+        // Laya.Stat.show();
         // 初始化场景
         TOOLS.runScene(WetchGame.gameScene);
     }

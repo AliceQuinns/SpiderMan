@@ -2,35 +2,14 @@
 let VIEW = null;
 /* 默认立方体的尺寸 */
 let CubeSize = { X: 0.8, Y: 0.5, Z: 5 };
-/* 初始着力线的尺寸 */
-let CylinderMeshCube = { X: .02, Y: 0.02, Z: 8 };
 /* 背景图的尺寸 */
 let bgsize = { X: 30, Y: 80, Z: 0.001 };
 /* 圆周运动参数 */
 let GLOB_Circumferential = {
-    angularVelocity: 0.001,
+    angularVelocity: 0.01,
     speed: 0.001,
-    increment: 0.0005,
+    increment: 0,
 };
-/* 服务器地址 */
-let SERVERURL = "";
-/* 立方体贴图 */
-let cubeTexture = [
-    [
-        "res/image/color/stone.png",
-        "res/image/color/stone2.png"
-    ]
-];
-/* 圆柱体贴图 */
-let CylinderMeshTexture = [
-    "res/image/color/stone.png",
-    "res/image/color/stone2.png"
-];
-/* 着力点贴图 */
-let Circular_point_texture = [
-    "res/image/color/stone.png",
-    "res/image/color/stone2.png"
-];
 /*  全局插件 */
 var TOOLS = {
     // 切换场景并清空上级场景
@@ -38,45 +17,6 @@ var TOOLS = {
         Laya.stage.removeChildren();
         Laya.stage.removeSelf();
         VIEW = new scene(arg);
-    },
-    // 获取立方体
-    pullCube: (texture, pool = false) => {
-        if (pool) {
-            let cube = Laya.Pool.getItemByCreateFun("cube", () => {
-                var box = new Laya.MeshSprite3D(new Laya.BoxMesh(CubeSize.X, CubeSize.Y, CubeSize.Z));
-                var material = new Laya.StandardMaterial();
-                material.diffuseTexture = Laya.Texture2D.load(cubeTexture[texture.Checkpoint][texture.imgType]);
-                box.meshRender.material = material;
-                return box;
-            });
-            return cube;
-        }
-        else {
-            //return box;
-        }
-    },
-    // 获取圆柱体
-    getCylinderMesh: (texture) => {
-        let cube = Laya.Pool.getItemByCreateFun("CylinderMesh", () => {
-            var box = new Laya.MeshSprite3D(new Laya.CylinderMesh(CylinderMeshCube.X, CylinderMeshCube.Y, CylinderMeshCube.Z));
-            var material = new Laya.StandardMaterial();
-            material.diffuseTexture = Laya.Texture2D.load(CylinderMeshTexture[texture]);
-            material.albedo = new Laya.Vector4(1, 1, 2, 0.3);
-            material.renderMode = Laya.StandardMaterial.RENDERMODE_DEPTHREAD_TRANSPARENTDOUBLEFACE;
-            box.meshRender.material = material;
-            return box;
-        });
-        return cube;
-    },
-    // 对象池回收
-    pushCube: (type, target, delet = false) => {
-        if (delet) {
-            target.destroy();
-        }
-        else {
-            Laya.stage.removeChild(target);
-            Laya.Pool.recover(type, target);
-        }
     },
     // 获取两个坐标间的距离
     getline: (coordinateA, coordinateB) => {
@@ -93,6 +33,51 @@ var TOOLS = {
     // 根据弧长计算角度
     getAngle: (radian, radius) => {
         return radian / (Math.PI * radius) * 180;
+    },
+    // 计算以 (X1,Y1) 为标准 （X2,Y2) 在标准坐标系下的角度
+    _getAngle: (x1, y1, x2, y2) => {
+        x1 = Math.abs(x1);
+        x2 = Math.abs(x2);
+        y1 = Math.abs(y1);
+        y2 = Math.abs(y2);
+        //console.log("传入", x1, y1, x2, y2);
+        var x = Math.abs(x1 - x2);
+        var y = Math.abs(y1 - y2);
+        var z = Math.sqrt(x * x + y * y);
+        var angle = Math.round((Math.asin(y / z) / Math.PI * 180));
+        if (x2 > x1 && y2 > y1) {
+            //console.log("第一象限");
+        }
+        else if (x2 < x1 && y2 > y1) {
+            angle += 90;
+            //console.log("第二象限");
+        }
+        else if (x2 < x1 && y2 < y1) {
+            angle += 180;
+            //console.log("第三象限");
+        }
+        else if (x2 > x1 && y2 < y1) {
+            angle += 270;
+            // console.log("第四象限");
+        }
+        else if (x2 === x1 && y2 > y1) {
+            angle = 90;
+            //console.log("Y轴正半轴");
+        }
+        else if (x2 > x1 && y2 === y1) {
+            angle = 0;
+            // console.log("X轴正半轴");
+        }
+        else if (x2 < x1 && y2 === y1) {
+            angle = 180;
+            // console.log("X轴负半轴");
+        }
+        else if (x2 === x1 && y2 < y1) {
+            angle = 270;
+            // console.log("Y轴负半轴");
+        }
+        // console.log(angle);
+        return angle;
     },
     // 弧度与角度互转
     getAngleTransform: (value, type) => {
@@ -208,14 +193,5 @@ let AUDIO = {
     stop: (url) => {
         Laya.SoundManager.stopSound(url);
     }
-};
-/**
- *
- *  服务器对接数据格式
- *
- */
-let data = {
-    Checkpoint: 1,
-    data: {}
 };
 //# sourceMappingURL=common.js.map

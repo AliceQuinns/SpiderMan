@@ -95895,814 +95895,173 @@ if (typeof define === 'function' && define.amd){
         }
     });
 }
-/**
- * 路由
- * 1.利用当前路由数据下标奇偶性来判断是上部方块还是下部方块 偶数在下 奇数在上
- *
- */
-var WetchGame;
-(function (WetchGame) {
-    class gameScene {
-        // 单摆运动
-        constructor() {
-            this.Cube_number = 0; // 位置
-            this.Router_game = null; // 游戏的路由表
-            this.cube_bg_type = true; // 贴图控制
-            this.Lead_cube = null; // 主角模型
-            this.Circular_obj = null; // 着力点对象
-            this.FourcePointRouter = []; //着力点路由表
-            this.FoucePointIndex = 0; // 记录当前着力点的下标
-            this.accelerate = false; // 圆周运动开关
-            this.whereabouts = false; // 斜抛运动开关
-            this.LeadLoop = true; // 单摆运动开关
-            this.collision = false; //碰撞检测开关
-            this.eventControl = true; //事件控制开关
-            this.Leaddirection = true; // 单摆运动方向控制
-            this.pollctr = 0; //控制方块的生成
-            this.bgctr = 0; //控制背景的轮播
-            this.bgobj = []; // 背景节点数组
-            this.gamestatus = true; //控制分数
-            this._Fraction = "0"; //当前分数
-            // 圆周运动
-            this.Circumferential = {
-                angularVelocity: GLOB_Circumferential.angularVelocity,
-                angle: 0,
-                speed: GLOB_Circumferential.speed,
-                increment: GLOB_Circumferential.increment,
-                radius: 0,
-                Circular_point: 0 // 圆心坐标
-            };
-            // 斜抛运动
-            this.SlantingThrow = {
-                pos: null,
-                gravity: 7,
-                v0: 5,
-                acceleration: 0,
-                angle: 45,
-                time: 0,
-            };
-            /**
-             *
-             *  main
-             *
-             */
-            /* 远程获取Router表 */
-            this.Main2D = () => {
-                let data = this.configure();
-                if (data.status) {
-                    // 远程请求
-                    console.log("请求配置表成功");
-                    this.Router_game = Array.from(data.data);
-                    this.Main3D();
+var yftools;
+(function (yftools) {
+    var defImg = "data:image/png;base64,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";
+    var httpReq = function (ip, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", ip, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                var result = {};
+                if (xhr.status == 200) {
+                    var response = xhr.responseText;
+                    result = JSON.parse(response);
+                }
+                if (callback) {
+                    callback(result);
+                }
+            }
+        };
+        xhr.send();
+    };
+    var btnClick = function (btn, func, caller, clear) {
+        if (clear === void 0) { clear = false; }
+        if (clear) {
+            btn.offAll();
+        }
+        btn.on(Laya.Event.CLICK, caller, func);
+    };
+    var YFWindow = /** @class */ (function () {
+        function YFWindow(adr, attr) {
+            if (attr === void 0) { attr = {}; }
+            var _this = this;
+            this.address = adr;
+            this.count = 0;
+            this.arg = attr;
+            httpReq(this.address, function (res) {
+                _this.init(res);
+            });
+            Laya.timer.loop(10, this, this.refresh);
+        }
+        YFWindow.prototype.init = function (info) {
+            var _this = this;
+            this.reqInfo = info;
+            var sprite = new Laya.Sprite();
+            sprite.width = Laya.stage.width;
+            sprite.height = Laya.stage.height;
+            sprite.pos(0, 0);
+            sprite.zOrder = 999999;
+            sprite.mouseThrough = true;
+            Laya.stage.addChild(sprite);
+            var btn = new Laya.Button();
+            // btn.loadImage(res.icon + "mc.png",0,0,0,0,Handler.create(this,(a,b)=>{
+            // 	btn.pos(Laya.stage.width - btn.width / 2,100);
+            // }));
+            btn.stateNum = 1;
+            sprite.addChild(btn);
+            Laya.loader.load((info.icon || "") + "mc.png", Laya.Handler.create(this, function (a, b) {
+                if (a) {
+                    btn.skin = info.icon + "mc.png";
                 }
                 else {
-                    // 本地请求
-                    Laya.loader.load("res/router/Router.json", Laya.Handler.create(this, () => {
-                        this.Router_game = Array.from(Laya.Loader.getRes('res/router/Router.json').data);
-                        this.Main3D();
-                    }));
+                    btn.loadImage(defImg);
                 }
-            };
-            /* 绘制3D场景 */
-            this.Main3D = () => {
-                let self = this;
-                /* 渲染开放数据域场景 */
-                self.renderCanvas();
-                /* 绘制3D场景 */
-                self.initScene();
-                /* 创建主角 */
-                self.Lead();
-                /* 初始化着力点 */
-                self.Circular_point_obj();
-                /* 初始着力线 */
-                self.ForceLineMain("init");
-                /* 渲染初始立方体 */
-                self.RenderCube(20);
-                /* 渲染第一条着力线 */
-                self.forceLine();
-                /* update */
-                self.updata();
-                /* 全局对象 */
-                self.Global_obj();
-                // 执行摄像机动画并绘制2d场景
-                this.cameraAnimation(() => {
-                    let scene = Laya.stage.addChild(new ui.indexUI);
-                    this.scene2D = scene;
-                    scene.zOrder = 999;
-                    this.loadAdn(); //开场动画
-                    this.animation2D(); // 字体动画
-                    this.startGame(); // 开始游戏按钮
-                });
-                /* 播放背景音乐 */
-                AUDIO.play(TOOLS.getRandomInt(0, 2) ? "bg_1" : "bg_2");
-                /* 关闭全部运动 */
-                this.accelerate = this.whereabouts = false;
-            };
-            /**
-             *
-             * 2d场景操作
-             *
-             */
-            this.startGame = () => {
-                let setup = this.scene2D.getChildByName("home").getChildByName("btn_groug").getChildByName("setup");
-                let btn = this.scene2D.getChildByName("home").getChildByName("btn_groug").getChildByName("start");
-                // 开始游戏
-                btn.on(Laya.Event.CLICK, this, (e) => {
-                    btn.offAll(); // 防止重复点击
-                    e.stopPropagation();
-                    let leadpos = new Laya.Vector3(0.8, 7, 0); // 默认主角位置
-                    let pos = this.Lead_cube.transform.position; // 当前主角位置
-                    var x = pos.x - leadpos.x, y = pos.y - leadpos.y; // 主角位置偏移
-                    var a = 0, b = 0, time = 100;
-                    // x轴偏移
-                    var xb = window.setInterval(() => {
-                        b += Math.abs(x / time);
-                        if (b >= Math.abs(x)) {
-                            window.clearInterval(xb);
-                        }
-                        this.camera.transform.translate(new Laya.Vector3(x / time, 0, 0));
-                    }, Math.abs(x / time));
-                    // y轴偏移
-                    var yb = window.setInterval(() => {
-                        a += Math.abs(y / time);
-                        if (a >= Math.abs(y)) {
-                            window.clearInterval(yb);
-                        }
-                        this.camera.transform.translate(new Laya.Vector3(y / time, 0, 0));
-                    }, Math.abs(y / time));
-                    this.LeadLoop = false; //关闭主角自转
-                    this.ForceLineMain("end"); // 回收着力线
-                    this.eventSwitch(); // 开启游戏控制
-                    var _ = this.scene2D.getChildByName("home");
-                    _.destroy();
-                    this.collision = true; //开启碰撞检测
-                    this.fractoinatr(); // 开始递增分数
-                });
-                // // 排行榜
-                // setup.on(Laya.Event.CLICK,this,(e)=>{
-                // })
-            };
-            /**
-             *
-             * 动画
-             *
-             */
-            // 开场动画
-            this.loadAdn = () => {
-                let btn_ground = this.scene2D.getChildByName("home").getChildByName("btn_groug");
-                let left_a = this.scene2D.getChildByName("home").getChildByName("left_a");
-                let left_b = this.scene2D.getChildByName("home").getChildByName("left_b");
-                let left_c = this.scene2D.getChildByName("home").getChildByName("left_c");
-                let left_d = this.scene2D.getChildByName("home").getChildByName("left_d");
-                let right_a = this.scene2D.getChildByName("home").getChildByName("right_a");
-                let right_b = this.scene2D.getChildByName("home").getChildByName("right_b");
-                let right_c = this.scene2D.getChildByName("home").getChildByName("right_c");
-                let logo = this.scene2D.getChildByName("home").getChildByName("logo");
-                animation.move(btn_ground, "y", 920, 500, 0);
-                animation.move(left_a, "x", 0, 500, 200);
-                animation.move(left_b, "x", 0, 500, 400);
-                animation.move(left_c, "x", 200, 500, 600);
-                animation.move(left_d, "x", 0, 500, 0);
-                animation.move(right_a, "x", 510, 500, 200);
-                animation.move(right_b, "x", 520, 500, 400);
-                animation.move(right_c, "x", 550, 500, 0);
-                animation.scale(logo, 1, 1, 1000, 0);
-            };
-            // 字体动画
-            this.animation2D = () => {
-                let _ = this.scene2D;
-                let title = _.getChildByName("home").getChildByName("title");
-                let status = true;
-                let alphaanim = () => {
-                    if (status) {
-                        Laya.Tween.to(title, { alpha: 0 }, 1000, Laya.Ease.quartOut, Laya.Handler.create(this, () => {
-                            alphaanim();
+                btn.anchorX = 0.5;
+                btn.anchorY = 0.5;
+                btn.pos(Laya.stage.width - btn.width, 200);
+            }));
+            btnClick(btn, function () {
+                if (btn["skip"]) {
+                    btn["skip"] = null;
+                }
+                else {
+                    if (_this.arg["fCallback"]) {
+                        _this.arg["fCallback"](_this.reqInfo);
+                    }
+                    else {
+                        var tip = new Laya.Label("请传入浮标回调【fCallback】");
+                        tip.anchorX = 0.5;
+                        tip.x = Laya.stage.width / 2;
+                        tip.y = Laya.stage.height / 2;
+                        tip.fontSize = 50;
+                        tip.color = "#00ffff";
+                        sprite.addChild(tip);
+                        Laya.Tween.to(tip, { y: 200 }, 1500, null, Laya.Handler.create(_this, function () {
+                            sprite.removeChild(tip);
                         }));
                     }
-                    else {
-                        Laya.Tween.to(title, { alpha: 1 }, 1000, Laya.Ease.quartOut, Laya.Handler.create(this, () => {
-                            alphaanim();
-                        }));
-                    }
-                    status = !status;
-                };
-                alphaanim();
-            };
-            /**
-             *
-             *  微信开放数据域
-             *
-             */
-            // 初始化开放域
-            this.renderCanvas = () => {
-                if (!Laya.Browser.window.wx)
-                    return;
-                // 获取缩放矩阵
-                var form = Laya.stage._canvasTransform;
-                var form_arr = [form.a, form.b, form.c, form.d, form.tx, form.ty];
-                if (!window["pushScore"]) {
-                    // 初始化开放域canvas
-                    Laya.timer.once(100, this, function () {
-                        // 创建canvas
-                        Laya.Browser.window.sharedCanvas.width = Laya.stage.width;
-                        Laya.Browser.window.sharedCanvas.height = Laya.stage.height;
-                        let openDataContext = Laya.Browser.window.wx.getOpenDataContext();
-                        openDataContext.postMessage({
-                            type: 1,
-                            data: {
-                                score_v_x: 50,
-                                score_v_y: 200,
-                                rk_v_x: 50,
-                                rk_v_y: 100,
-                                form_arr: form_arr
-                            }
-                        });
-                    });
                 }
-                else {
-                    window["pushScore"](1, {
-                        score_v_x: 50,
-                        score_v_y: 200,
-                        rk_v_x: 50,
-                        rk_v_y: 100,
-                        form_arr: form_arr
-                    });
-                    console.log("存在puahscore函数");
+            }, this);
+            sprite.mouseEnabled = true;
+            sprite.on(Laya.Event.MOUSE_DOWN, this, function (obj, e) {
+                if (obj.getBounds().contains(e.stageX, e.stageY)) {
+                    obj.drag = true;
+                    _this.startP = new Laya.Point(e.stageX, e.stageY);
                 }
-            };
-            // 渲染开放域
-            this.Wxcanvas = (target) => {
-                if (!Laya.Browser.window.wx)
-                    return;
-                // 渲染主域的canvas
-                Laya.timer.once(500, this, function () {
-                    var sprite = new Laya.Sprite();
-                    sprite.pos(0, 0);
-                    var texture = new Laya.Texture(Laya.Browser.window.sharedCanvas);
-                    sprite.graphics.drawTexture(texture, 0, 0, texture.width, texture.height);
-                    target.addChild(sprite);
-                });
-                // 打开分数排行榜
-                console.log("获得分数", this._Fraction);
-                window["pushScore"](2, this._Fraction);
-            };
-            /**
-             *
-             * 场景绘制
-             *
-             */
-            // 绘制初始场景
-            this.initScene = () => {
-                //添加3D场景
-                var scene = Laya.stage.addChild(new Laya.Scene());
-                this.Game_scene = scene;
-                //添加摄像机
-                var camera = (scene.addChild(new Laya.Camera(0, 0.1, 100)));
-                camera.transform.translate(new Laya.Vector3(-1, 10, 6), false);
-                camera.transform.localRotationEuler = new Laya.Vector3(-15, -25, 2);
-                camera.clearColor = new Laya.Vector4(1, 1, 1, 1);
-                this.camera = camera;
-                //平行光
-                var directionLight = scene.addChild(new Laya.DirectionLight());
-                directionLight.direction = new Laya.Vector3(2, -2, -3);
-                this.directionLight = directionLight;
-                for (let i = 0; i < 3; i++) {
-                    //添加背景
-                    var bottombox = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(bgsize.X, bgsize.Y, bgsize.Z)));
-                    var material = new Laya.StandardMaterial();
-                    material.diffuseTexture = Laya.Texture2D.load("res/image/color/floor.png");
-                    bottombox.meshRender.material = material;
-                    bottombox.transform.position = new Laya.Vector3(5 + bgsize.X * i, 0, -10);
-                    // bottombox.transform.localRotationEuler = new Laya.Vector3(0,0,0);
-                    this.bgobj.push(bottombox);
-                }
-                //开启雾化效果
-                scene.enableFog = true;
-                //设置雾化的颜色
-                scene.fogColor = new Laya.Vector3(1, 1, 1);
-                //设置雾化的起始位置，相对于相机的距离
-                scene.fogStart = 10;
-                //设置雾化最浓处的距离。
-                scene.fogRange = 50;
-            };
-            /**
-             *
-             * 事件
-             *
-             */
-            this.eventSwitch = () => {
-                // 鼠标按下
-                Laya.stage.on(Laya.Event.MOUSE_DOWN, this, () => {
-                    if (this.eventControl) {
-                        this.ForceLineMain("start"); //绘制着力线
-                    }
-                });
-                // 鼠标松开
-                Laya.stage.on(Laya.Event.MOUSE_UP, this, () => {
-                    if (this.eventControl) {
-                        this.ForceLineMain("end"); //回收着力线
-                    }
-                });
-            };
-            /**
-             *
-             * 着力点与着力线
-             *
-             */
-            // 着力线入口
-            this.ForceLineMain = (status) => {
-                if (status === "init") {
-                    let target = TOOLS.getCylinderMesh(0);
-                    this.Game_scene.addChild(target);
-                    this.ForceLineObj = target;
-                    target.transform.pivot = new Laya.Vector3(0, CylinderMeshCube.Y / 2, 0);
-                    this.accelerate = this.whereabouts = false;
-                }
-                else if (status === "start") {
-                    this.forceLine();
-                }
-                else if (status === "end") {
-                    this.deleteFoce();
-                }
-            };
-            // 关闭着力线
-            this.deleteFoce = () => {
-                //console.log("角速度",this.Circumferential.angularVelocity);
-                let Leadpos = this.Lead_cube.transform.position; // 主角位置
-                this.SlantingThrow.pos = Leadpos;
-                //console.log("主角坐标",Leadpos);
-                // 斜抛运动参数
-                this.SlantingThrow.v0 = this.Circumferential.angularVelocity * this.Circumferential.radius; // 线速度
-                let angle = 90 - (360 - (this.Circumferential.angle - Math.round(this.Circumferential.angle / 360) * 360)); // 斜抛角度
-                this.SlantingThrow.angle = angle; // 斜抛角度
-                //console.log("斜抛角度为",angle,"线速度为",this.SlantingThrow.v0);
-                let target = this.ForceLineObj;
-                target.transform.scale = new Laya.Vector3(1, 1, 1);
-                this.accelerate = false; // 关闭圆周运动
-                this.whereabouts = true; // 开启斜抛运动
-                this.Circumferential.speed = GLOB_Circumferential.speed; // 加速度
-                //this.Circumferential.time = GLOB_Circumferential.time;// 时间
-            };
-            // 控制着力点
-            this.Rend_Circular_point = (pos) => {
-                this.Circular_obj.transform.position = new Laya.Vector3(pos.x, pos.y, 0);
-            };
-            // 获取信息
-            this._getFocecontent = (index) => {
-                if (index <= 0) {
-                    index = 0;
-                }
-                let pos;
-                if (!!this.FourcePointRouter[index]) {
-                    pos = new Laya.Vector3(this.FourcePointRouter[index].point.x, this.FourcePointRouter[index].point.y);
-                }
-                else {
-                    pos = new Laya.Vector3(this.FourcePointRouter[index - 1].point.x, this.FourcePointRouter[index - 1].point.y);
-                    this.RenderCube(2); // 创建方块
-                }
-                return pos;
-            };
-            // 绘制着力线
-            this.forceLine = () => {
-                this.SlantingThrow.time = 0; // 清空斜抛运动的时间
-                this.whereabouts = false; // 关闭斜抛运动
-                var LeadPosition = this.Lead_cube.transform.position; // 主角
-                var FoucePosition = this._FocusPoint(LeadPosition); // 着力点
-                this.foucePos = FoucePosition; //当前着力坐标
-                let angleData = this._quadrant(LeadPosition, FoucePosition); // 角度
-                let target = this.ForceLineObj;
-                let target_height = TOOLS.getline(FoucePosition, LeadPosition);
-                let target_scale = target_height / CylinderMeshCube.Y;
-                let angleLead = angleData.angleLead;
-                this.Circumferential.angle = angleData.angleLead + 270;
-                this.Circumferential.Circular_point = FoucePosition;
-                this.Circumferential.radius = target_height; // 圆半径
-                target.transform.position = new Laya.Vector3(FoucePosition.x, FoucePosition.y, 0);
-                target.transform.scale = new Laya.Vector3(1, target_scale, 1);
-                target.transform.localRotationEuler = new Laya.Vector3(0, 0, angleLead);
-                this.Rend_Circular_point(FoucePosition);
-                this.Circumferential.angularVelocity = this.SlantingThrow.v0 / target_height; // 计算角速度
-                this.accelerate = true; // 开启圆周运动
-            };
-            // 着力点的选取 
-            this._FocusPoint = (LeadPosition) => {
-                let value = null; // 值
-                let pos = this._getFocecontent(this.FoucePointIndex); // 下一个着力点坐标
-                let beforePos = this._getFocecontent(this.FoucePointIndex - 1); // 上一个着力点坐标
-                let size = TOOLS.getline(pos, LeadPosition); // 计算主角和着力点的距离
-                if (LeadPosition.x <= (beforePos.x + (CubeSize.X / 2))) {
-                    // 未超过上一个着力点
-                    value = beforePos;
-                }
-                else if (LeadPosition.x >= pos.x || pos.x - LeadPosition.x <= (CubeSize.X / 2)) {
-                    // 超过着力点
-                    this.FoucePointIndex++;
-                    var a = this._FocusPoint(LeadPosition);
-                    //console.log(a);
-                    value = a;
-                }
-                else {
-                    this.FoucePointIndex++;
-                    value = pos; // 正常情况
-                }
-                return value;
-            };
-            // 连接主角
-            this.FoceAnimation = (pos) => {
-                let LeadPosition = pos; // 主角坐标
-                let FoucePosition = this.foucePos; // 着力点坐标
-                let angleLead = this._quadrant(LeadPosition, FoucePosition).angleLead; // 计算角度
-                this.ForceLineObj.transform.localRotationEuler = new Laya.Vector3(0, 0, angleLead);
-            };
-            // 创建着力点
-            this.Circular_point_obj = () => {
-                var box = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(0.1, 0.1, 0.1)));
-                var material = new Laya.StandardMaterial();
-                material.diffuseTexture = Laya.Texture2D.load(Circular_point_texture[0]);
-                box.meshRender.material = material;
-                box.transform.position = new Laya.Vector3(0, 0, 0);
-                this.Circular_obj = box;
-                //console.log(this.FourcePointRouter);
-            };
-            /**
-             *
-             * 摄像机
-             *
-             */
-            // 摄像机动画
-            this.cameraAnimation = (call) => {
-                this.camera.transform.translate((new Laya.Vector3(0, 0, 20)), false);
-                var a = 0;
-                let anim = () => {
-                    if (a >= 20) {
-                        Laya.timer.clear(this, anim);
-                        window.setTimeout(() => {
-                            call(); //执行回调
-                        }, 300);
-                    }
-                    ;
-                    this.camera.transform.translate(new Laya.Vector3(0, 0, -0.2), false);
-                    a += 0.2;
-                };
-                Laya.timer.loop(1, this, anim);
-            };
-            // 背景无限轮播
-            this.bgInfiniteRelay = (val) => {
-                this.bgctr += val;
-                if (this.bgctr >= bgsize.X) {
-                    var pos = this.bgobj[2].transform.position;
-                    var target = this.bgobj.shift(); //取第一个
-                    target.transform.translate(new Laya.Vector3(pos.x + bgsize.X, 0, 0));
-                    this.bgobj.push(target); //排入最后
-                    this.bgctr = 0;
-                }
-            };
-            /**
-             *
-             *  1.立方体生成
-             *  2.配置表解析
-             *
-             */
-            // 方块回收与创建
-            this.cubectr = (val) => {
-                this.pollctr += val;
-                if (this.pollctr >= CubeSize.X) {
-                    if (Laya.stage._childs[0]._childs.length >= 40) {
-                        for (let i = 10; i--;) {
-                            Laya.stage._childs[0]._childs[8].destroy();
-                        }
-                    }
-                    this.RenderCube(2); // 创建方块
-                    this.pollctr = 0;
-                }
-            };
-            // 远程配置表管理
-            this.configure = () => {
-                let _ = { data: null, status: null };
-                if (!!SERVERURL || !!window["SERVERURL"]) {
-                    var data = TOOLS.Ajax(SERVERURL);
-                    data.then(res => {
-                        _.data = res;
-                        _.status = true;
-                    }).catch(err => {
-                        _.status = false;
-                    });
-                }
-                else {
-                    _.status = false;
-                }
-                ;
-                return _; // 返回状态
-            };
-            // 立方体生成
-            this.RenderCube = (size) => {
-                let self = this;
-                //console.log(self.Cube_number);
-                for (let i = size; i--;) {
-                    if (self.Cube_number >= self.Router_game.length || !self.Router_game[self.Cube_number]) {
-                        /* 配置读取完毕 */
-                        console.log(self.Cube_number, "配置读取完毕");
-                        let data = this.configure();
-                        if (data.status) {
-                            // 远程请求
-                            this.Router_game = this.Router_game.concat(data.data);
-                        }
-                        else {
-                            // 合并本地数据
-                            this.Router_game = this.Router_game.concat(this.Router_game);
-                        }
-                        this.RenderCube(i);
+            }, [btn]);
+            // sprite.on(Laya.Event.MOUSE_MOVE, this, (obj, e)=>{
+            // 	if(obj.drag){
+            // 		obj.x = e.stageX;
+            // 		obj.y = e.stageY;
+            // 		if(startP.distance(e.stageX, e.stageY) > 50){
+            // 			obj.skip = true; //跳过点击事件
+            // 		}
+            // 	}
+            // },[btn]);
+            sprite.on(Laya.Event.MOUSE_UP, this, function (obj, e) {
+                if (obj.drag) {
+                    if (obj.x < Laya.stage.width / 2) {
+                        obj.x = obj.width / 2;
                     }
                     else {
-                        (self.Cube_number % 2 === 0)
-                            ?
-                                self.AddBox(0, self.Cube_number) // 偶数在下
-                            :
-                                self.AddBox(1, self.Cube_number); // 奇数在上
-                        self.Cube_number++;
+                        obj.x = Laya.stage.width - obj.width / 2;
+                    }
+                    if (obj.y < obj.height / 2) {
+                        obj.y = obj.height / 2;
+                    }
+                    else if (obj.y > Laya.stage.height - obj.height / 2) {
+                        obj.y = Laya.stage.height - obj.height / 2;
                     }
                 }
-            };
-            // 单个立方体
-            this.AddBox = (type = null, index) => {
-                let box = TOOLS.pullCube({ Checkpoint: 0, imgType: (this.cube_bg_type) ? 0 : 1 }); //从对象池请求立方体
-                this.Game_scene.addChild(box); //添加立方体
-                //console.log(this.Router_game[index]);
-                let height = Number(this.Router_game[index].hp); // 获取立方体高度
-                if (type === 0) {
-                    // 下部
-                    let Box_X = (index + 2) / 2 * CubeSize.X;
-                    let Box_Y = (CubeSize.Z / 2) + height;
-                    box.transform.translate(new Laya.Vector3(Box_X, Box_Y, 0));
-                    this.cube_bg_type = !this.cube_bg_type;
-                }
-                else {
-                    // 上部
-                    let targetIndex = (index + 1) / 2; //计算当前数据为第几位奇数
-                    let Box_X = targetIndex * CubeSize.X;
-                    let Box_Y = CubeSize.Z + height + ((CubeSize.Z / 2) + Number(this.Router_game[index - 1].hp));
-                    // 判断当前立方体是否有着力点
-                    if (!!this.Router_game[index].skill && Number(this.Router_game[index].skill) === 1) {
-                        this.FourcePointRouter.push({
-                            point: { x: Box_X, y: Box_Y - (CubeSize.Z / 2) },
-                            data_index: index,
-                        });
-                    }
-                    ;
-                    box.transform.translate(new Laya.Vector3(Box_X, Box_Y, 0));
-                }
-            };
-            /**
-             *
-             * 主角控制
-             *
-             */
-            // 创建主角
-            this.Lead = () => {
-                let target_cube = this.Game_scene.addChild(new Laya.MeshSprite3D(new Laya.SphereMesh(0.15, 8, 8)));
-                var material = new Laya.StandardMaterial();
-                material.diffuseTexture = Laya.Texture2D.load("res/image/color/football.jpg");
-                target_cube.meshRender.material = material;
-                target_cube.transform.position = new Laya.Vector3(0.8, 7, 0);
-                // material.albedo=new Laya.Vector4(1,1,2,0.3);
-                // material.renderMode = Laya.StandardMaterial.RENDERMODE_DEPTHREAD_TRANSPARENTDOUBLEFACE;
-                this.Lead_cube = target_cube;
-            };
-            /**
-             *
-             * 分数递增
-             *
-             */
-            this.fractoinatr = () => {
-                // 分数控制逻辑
-                var _ = (this.scene2D.getChildByName("game").getChildByName("Fraction"));
-                _.visible = true;
-                window.setInterval(() => {
-                    if (this.gamestatus) {
-                        let text = Number(_.value);
-                        _.value = String(text += 1);
-                        //Number()
-                    }
-                    ;
-                }, 500);
-            };
-            /* 加载2d资源 */
-            Laya.loader.load([
-                "res/atlas/index.atlas"
-            ], Laya.Handler.create(this, this.Main2D));
-        }
-        // 坐标象限
-        _quadrant(LeadPosition, FoucePosition) {
-            let quadrant, angleLead = TOOLS.getRad(LeadPosition.x, LeadPosition.y, FoucePosition.x, FoucePosition.y);
-            if (LeadPosition.x >= FoucePosition.x && LeadPosition.y <= FoucePosition.y) {
-                quadrant = 0;
-                angleLead = 90 - angleLead;
+                obj.drag = null;
+                _this.startP = null;
+            }, [btn]);
+            this.touchSp = sprite;
+            this.floatIcon = btn;
+        };
+        YFWindow.prototype.refresh = function () {
+            var _this = this;
+            if (!this.touchSp) {
+                return;
             }
-            else if (LeadPosition.x >= FoucePosition.x && LeadPosition.y >= FoucePosition.y) {
-                quadrant = 1;
-                angleLead = 90 + angleLead;
+            if (!this.touchSp.parent) {
+                Laya.stage.addChild(this.touchSp);
             }
-            else if (LeadPosition.x <= FoucePosition.x && LeadPosition.y >= FoucePosition.y) {
-                quadrant = 2;
-                angleLead = 270 - angleLead;
-            }
-            else if (LeadPosition.x <= FoucePosition.x && LeadPosition.y <= FoucePosition.y) {
-                quadrant = 3;
-                angleLead = 270 + angleLead;
-            }
-            ;
-            // 90°角特殊情况
-            if (angleLead === 0) {
-                angleLead = quadrant * 90;
-            }
-            return { quadrant, angleLead };
-        }
-        /**
-         *
-         * 运动函数
-         *
-         */
-        // 圆周运动
-        circularMotion(angle, pos) {
-            let before_pos = pos;
-            let target_X = this.Circumferential.Circular_point.x + this.Circumferential.radius * Math.cos(this.Circumferential.angle * Math.PI / 180);
-            let target_Y = this.Circumferential.Circular_point.y + this.Circumferential.radius * Math.sin(this.Circumferential.angle * Math.PI / 180);
-            this.Lead_cube.transform.position = new Laya.Vector3(target_X, target_Y, 0);
-            return { x: target_X - before_pos.x, y: target_Y - before_pos.y, pos: { x: target_X, y: target_Y } };
-        }
-        // 斜抛运动
-        SlantingMotion(angle, time, speed, scale = 1) {
-            let X, Y;
-            X = speed * Math.cos(angle * Math.PI / 180) * time; // 水平距离
-            Y = speed * Math.sin(angle * Math.PI / 180) * time - (this.SlantingThrow.gravity * (time * time)) / 2; // 垂直距离
-            X = X * scale;
-            Y = Y * scale;
-            return { X, Y };
-        }
-        /**
-         *
-         *  碰撞检测
-         *
-         */
-        collisionDetection(pos) {
-            let i = Math.round(pos.x / CubeSize.X);
-            if (i <= 0)
-                i = 1;
-            let top = 2 * i - 1; //上方数据索引
-            let bottom = top - 1; //下方数据索引
-            let max = Number(this.Router_game[top].hp); // 上部数据
-            let min = Number(this.Router_game[bottom].hp); // 下部数据
-            let toppos = new Laya.Vector3(0, CubeSize.Z + max + ((CubeSize.Z / 2) + min), 0);
-            let bottompos = new Laya.Vector3(0, (CubeSize.Z / 2) + min, 0);
-            let max_height = toppos.y - (CubeSize.Z / 2); // 最高高度 上部
-            let min_height = bottompos.y + (CubeSize.Z / 2); // 最低高度 下部
-            if (pos.y >= max_height || pos.y <= min_height) {
-                // console.log(`第${i}个    ${top}    ${bottom}  ${toppos}   ${bottompos}`);
-                // 结束游戏
-                this.accelerate = false; // 关闭圆周运动
-                this.whereabouts = false; // 关闭斜抛运动
-                this.collision = false; // 关闭碰撞检测
-                this.eventControl = false; // 关闭事件监听
-                this.ForceLineObj.transform.scale = new Laya.Vector3(1, 1, 1); // 关闭着力线
-                this.gamestatus = false; //关闭分数递增
-                this._RankingList(); //场景排行榜
-            }
-        }
-        /**
-         *
-         *  创建游戏结束场景
-         *
-         */
-        _RankingList() {
-            // 保存分数
-            var _ = (this.scene2D.getChildByName("game").getChildByName("Fraction"));
-            this._Fraction = _.value;
-            this.scene2D.destroy(); //清空index场景
-            let scene = Laya.stage.addChild(new ui.alertUI);
-            this.scene2D = scene;
-            scene.zOrder = 999;
-            this.Wxcanvas(scene); //创建排行榜 
-            let btn = scene.getChildByName("reset");
-            let share = scene.getChildByName("share");
-            btn.on(Laya.Event.CLICK, this, () => {
-                TOOLS.runScene(WetchGame.gameScene); //重新开始
-            });
-            share.on(Laya.Event.CLICK, this, () => {
-                window["share"](); //分享
-            });
-        }
-        /**
-         *
-         *  updata
-         *
-         */
-        updata() {
-            let self = this;
-            Laya.timer.frameLoop(1, this, () => {
-                // 主角位置
-                let pos = this.Lead_cube.transform.position;
-                // 圆周运动
-                if (self.accelerate) {
-                    let office = self.circularMotion(self.Circumferential.angle, pos); // 根据角度移动主角
-                    self.FoceAnimation(office.pos); // 绘制着力线
-                    self.Circumferential.angle += ((Laya.timer.delta / 1000 * self.Circumferential.angularVelocity) * 180 / Math.PI); // 计算角度
-                    self.Circumferential.angularVelocity += self.Circumferential.speed; // 递增角速度
-                    self.camera.transform.translate(new Laya.Vector3(office.x, office.y, 0), false);
-                    self.cubectr(office.x); //控制方块生成
-                    self.bgInfiniteRelay(office.x); //控制背景轮播
+            if (this.floatIcon["drag"]) {
+                this.floatIcon.x = Laya.stage.mouseX;
+                this.floatIcon.y = Laya.stage.mouseY;
+                if (this.startP.distance(Laya.stage.mouseX, Laya.stage.mouseY) > 50) {
+                    this.floatIcon["skip"] = true; //跳过点击事件
                 }
-                // 斜抛运动
-                if (self.whereabouts) {
-                    let _ = self.SlantingMotion(self.SlantingThrow.angle, self.SlantingThrow.time, self.SlantingThrow.v0, 1);
-                    self.SlantingThrow.time += (Laya.timer.delta / 1000);
-                    let vect3 = new Laya.Vector3(this.SlantingThrow.pos.x + _.X, this.SlantingThrow.pos.y + _.Y, 0); // 位移向量
-                    this.camera.transform.translate(new Laya.Vector3(vect3.x - pos.x, vect3.y - pos.y), false);
-                    self.cubectr(vect3.x - pos.x); //控制方块生成
-                    self.bgInfiniteRelay(vect3.x - pos.x); //控制背景轮播
-                    this.Lead_cube.transform.position = vect3;
-                    self.Circumferential.angularVelocity -= self.Circumferential.speed; // 递减角速度
-                }
-                // 单摆运动
-                if (self.LeadLoop) {
-                    if (self.Circumferential.angle >= 310) {
-                        self.Leaddirection = false;
+            }
+            this.count++;
+            if (this.count > 1000) {
+                this.count = 0;
+                httpReq(this.address, function (res) {
+                    if (_this.floatIcon) {
+                        console.log(res);
                     }
-                    else if (self.Circumferential.angle <= 230) {
-                        self.Leaddirection = true;
-                    }
-                    ;
-                    if (self.Leaddirection) {
-                        // 顺时针
-                        self.Circumferential.angle++;
-                    }
-                    else {
-                        // 逆时针
-                        self.Circumferential.angle--;
-                    }
-                    let office = self.circularMotion(self.Circumferential.angle, pos); // 改变主角位置
-                    self.FoceAnimation(office.pos);
-                }
-                // 碰撞检测
-                if (self.collision) {
-                    this.collisionDetection(pos);
-                }
-                // 主角动画
-                this.Lead_cube.transform.rotate(new Laya.Vector3(.1, .1, .1));
-            });
-        }
-        /**
-         *
-         * 接口暴露
-         *
-         */
-        // 全局变量转换接口
-        Global_obj() {
-            window['Lead'] = this.Lead_cube; // 主角
-            window["camera"] = this.camera; // 摄像机
-            window["foce"] = this.ForceLineObj; //着力线
-            window["focepoivet"] = this.Circular_obj; // 着力点
-            window["directionLight"] = this.directionLight; //灯光
-            window["scene2D"] = this.scene2D; //2d场景
-            window["move"] = this.SlantingMotion; //斜抛算法
-            window["add"] = this.RenderCube; // 方块生成
-        }
-    }
-    WetchGame.gameScene = gameScene;
-})(WetchGame || (WetchGame = {}));
-//# sourceMappingURL=game.js.map
+                });
+            }
+        };
+        return YFWindow;
+    }());
+    yftools.YFWindow = YFWindow;
+})(yftools || (yftools = {}));
+//# sourceMappingURL=FWindow.js.map
 /* 当前场景 */
 let VIEW = null;
 /* 默认立方体的尺寸 */
 let CubeSize = { X: 0.8, Y: 0.5, Z: 5 };
-/* 初始着力线的尺寸 */
-let CylinderMeshCube = { X: .02, Y: 0.02, Z: 8 };
 /* 背景图的尺寸 */
 let bgsize = { X: 30, Y: 80, Z: 0.001 };
 /* 圆周运动参数 */
 let GLOB_Circumferential = {
-    angularVelocity: 0.001,
+    angularVelocity: 0.01,
     speed: 0.001,
-    increment: 0.0005,
+    increment: 0,
 };
-/* 服务器地址 */
-let SERVERURL = "";
-/* 立方体贴图 */
-let cubeTexture = [
-    [
-        "res/image/color/stone.png",
-        "res/image/color/stone2.png"
-    ]
-];
-/* 圆柱体贴图 */
-let CylinderMeshTexture = [
-    "res/image/color/stone.png",
-    "res/image/color/stone2.png"
-];
-/* 着力点贴图 */
-let Circular_point_texture = [
-    "res/image/color/stone.png",
-    "res/image/color/stone2.png"
-];
 /*  全局插件 */
 var TOOLS = {
     // 切换场景并清空上级场景
@@ -96710,49 +96069,6 @@ var TOOLS = {
         Laya.stage.removeChildren();
         Laya.stage.removeSelf();
         VIEW = new scene(arg);
-    },
-    // 获取立方体
-    pullCube: (texture, pool = false) => {
-        if (pool) {
-            let cube = Laya.Pool.getItemByCreateFun("cube", () => {
-                var box = new Laya.MeshSprite3D(new Laya.BoxMesh(CubeSize.X, CubeSize.Y, CubeSize.Z));
-                var material = new Laya.StandardMaterial();
-                material.diffuseTexture = Laya.Texture2D.load(cubeTexture[texture.Checkpoint][texture.imgType]);
-                box.meshRender.material = material;
-                return box;
-            });
-            return cube;
-        }
-        else {
-            var box = new Laya.MeshSprite3D(new Laya.BoxMesh(CubeSize.X, CubeSize.Y, CubeSize.Z));
-            var material = new Laya.StandardMaterial();
-            material.diffuseTexture = Laya.Texture2D.load(cubeTexture[texture.Checkpoint][texture.imgType]);
-            box.meshRender.material = material;
-            return box;
-        }
-    },
-    // 获取圆柱体
-    getCylinderMesh: (texture) => {
-        let cube = Laya.Pool.getItemByCreateFun("CylinderMesh", () => {
-            var box = new Laya.MeshSprite3D(new Laya.CylinderMesh(CylinderMeshCube.X, CylinderMeshCube.Y, CylinderMeshCube.Z));
-            var material = new Laya.StandardMaterial();
-            material.diffuseTexture = Laya.Texture2D.load(CylinderMeshTexture[texture]);
-            material.albedo = new Laya.Vector4(1, 1, 2, 0.3);
-            material.renderMode = Laya.StandardMaterial.RENDERMODE_DEPTHREAD_TRANSPARENTDOUBLEFACE;
-            box.meshRender.material = material;
-            return box;
-        });
-        return cube;
-    },
-    // 对象池回收
-    pushCube: (type, target, delet = false) => {
-        if (delet) {
-            target.destroy();
-        }
-        else {
-            Laya.stage.removeChild(target);
-            Laya.Pool.recover(type, target);
-        }
     },
     // 获取两个坐标间的距离
     getline: (coordinateA, coordinateB) => {
@@ -96769,6 +96085,51 @@ var TOOLS = {
     // 根据弧长计算角度
     getAngle: (radian, radius) => {
         return radian / (Math.PI * radius) * 180;
+    },
+    // 计算以 (X1,Y1) 为标准 （X2,Y2) 在标准坐标系下的角度
+    _getAngle: (x1, y1, x2, y2) => {
+        x1 = Math.abs(x1);
+        x2 = Math.abs(x2);
+        y1 = Math.abs(y1);
+        y2 = Math.abs(y2);
+        //console.log("传入", x1, y1, x2, y2);
+        var x = Math.abs(x1 - x2);
+        var y = Math.abs(y1 - y2);
+        var z = Math.sqrt(x * x + y * y);
+        var angle = Math.round((Math.asin(y / z) / Math.PI * 180));
+        if (x2 > x1 && y2 > y1) {
+            //console.log("第一象限");
+        }
+        else if (x2 < x1 && y2 > y1) {
+            angle += 90;
+            //console.log("第二象限");
+        }
+        else if (x2 < x1 && y2 < y1) {
+            angle += 180;
+            //console.log("第三象限");
+        }
+        else if (x2 > x1 && y2 < y1) {
+            angle += 270;
+            // console.log("第四象限");
+        }
+        else if (x2 === x1 && y2 > y1) {
+            angle = 90;
+            //console.log("Y轴正半轴");
+        }
+        else if (x2 > x1 && y2 === y1) {
+            angle = 0;
+            // console.log("X轴正半轴");
+        }
+        else if (x2 < x1 && y2 === y1) {
+            angle = 180;
+            // console.log("X轴负半轴");
+        }
+        else if (x2 === x1 && y2 < y1) {
+            angle = 270;
+            // console.log("Y轴负半轴");
+        }
+        // console.log(angle);
+        return angle;
     },
     // 弧度与角度互转
     getAngleTransform: (value, type) => {
@@ -96798,6 +96159,29 @@ var TOOLS = {
             };
             ajax.send();
         });
+    },
+    // 获取json数据
+    getJSON: url => {
+        let promise = new Promise(function (resolve, reject) {
+            let handler = function () {
+                if (this.readyState !== 4)
+                    return;
+                if (this.status === 200) {
+                    resolve(this.response);
+                }
+                else {
+                    reject(new Error(this.statusText));
+                }
+                ;
+            };
+            let client = new XMLHttpRequest();
+            client.open("GET", url);
+            client.onreadystatechange = handler;
+            client.responseType = "json";
+            client.setRequestHeader("Accept", "application/json");
+            client.send();
+        });
+        return promise;
     },
     // 随机算法
     getRandomInt: function (min, max) {
@@ -96862,16 +96246,1106 @@ let AUDIO = {
         Laya.SoundManager.stopSound(url);
     }
 };
-/**
- *
- *  服务器对接数据格式
- *
- */
-let data = {
-    Checkpoint: 1,
-    data: {}
-};
 //# sourceMappingURL=common.js.map
+var WetchGame;
+(function (WetchGame) {
+    class gameScene {
+        constructor() {
+            this.Router_game = null; // 路由表
+            this.cube_bg_type = true; // 贴图控制
+            this.Lead_cube = null; // 主角模型
+            this.FourcePointRouter = []; // 着力点路由表
+            this._Fraction = "0"; // 当前分数
+            this.dataform = 1; // 当前使用配置表id
+            this.dataInfoArray = []; // 激光点信息表
+            this._index = 0; // 激光表读取 index 
+            this.rendelist = []; // 渲染队列
+            this.Recordspot = 0; // 当前主角使用激光点 index 值
+            this.scoreCalculation = true; // 分数计算开关
+            this.Scorevalue = 0; // 当前分数
+            // 临时变量
+            this.TemporaryVariable = {
+                cleateBoxStatus: true // 对象创建控制
+            };
+            this.main = () => {
+                this.animationobj = new WetchGame.animationUI(this);
+                this.Propobj = new WetchGame.Propobj(this);
+                this.npc = new WetchGame.npc(this);
+                this.Shopping = new WetchGame.Shopping(this);
+                this.wx = new WetchGame.Wetch(this);
+                let request = TOOLS.Ajax(`https://shop.yunfanshidai.com/xcxht/pqxcx/conf/${this.dataform}.json`);
+                request.then(data => {
+                    let _data = JSON.parse(Object(data)).data;
+                    this.Router_game = _data;
+                    this.dataFormat(_data);
+                    this.Main3D();
+                    this.dataform += 1;
+                });
+                request.catch(err => {
+                    Laya.loader.load("res/router/Router2.json", Laya.Handler.create(this, () => {
+                        let _data = Array.from(Laya.Loader.getRes('res/router/Router2.json').data);
+                        this.Router_game = _data;
+                        this.dataFormat(_data);
+                        this.Main3D();
+                    }));
+                });
+            };
+            this.Main3D = () => {
+                let self = this;
+                let _ = this.animationobj.initScene();
+                this.Game_scene = _.scene; // 3D场景
+                this.camera = _.camera;
+                this.npc.init({
+                    scene: _.scene,
+                    skin: 0,
+                });
+                this.Lead_cube = this.npc.ME;
+                this.Propobj.init();
+                this.Propobj.halo("add", (new Laya.Vector3(0.8, 7, 0)), 0); // 光环            
+                this.ForceLineObj = this.Propobj.Laserline; // 激光线
+                this.Controller("start"); // 进入游戏    
+                this.Global_obj();
+                // console.log(this.dataInfoArray);
+                // console.log(this.Router_game);
+                // 更多游戏跳转
+                // this.animationobj.mask({type:1});
+                // this.animationobj.mask({type:1});
+                //this.CountDown(()=>{});
+                new yftools.YFWindow("https://shop.yunfanshidai.com/xcxht/slyxhz/api/getothergamelist.php?gameid=4&openid=test");
+            };
+            // 开始游戏
+            this.startGame = () => {
+                let setup = this.scene2D
+                    .getChildByName("home")
+                    .getChildByName("btn_groug")
+                    .getChildByName("setup");
+                let btn = this.scene2D
+                    .getChildByName("home")
+                    .getChildByName("btn_groug")
+                    .getChildByName("start");
+                let skin = this.scene2D
+                    .getChildByName("home")
+                    .getChildByName("btn_groug")
+                    .getChildByName("skin");
+                setup.offAll();
+                btn.offAll();
+                skin.offAll();
+                btn.on(Laya.Event.CLICK, this, (e) => {
+                    btn.offAll();
+                    e.stopPropagation();
+                    var _ = this.scene2D.getChildByName("home");
+                    _.destroy();
+                    // this.Propobj.halo("delete");
+                    this.fractoinatr(); // 分数控制
+                    this.rendelist = [this._whereabouts, this.collisionDetection.bind(this)]; // 开启抛物
+                    this.updata();
+                    this.eventSwitch();
+                });
+                setup.on(Laya.Event.CLICK, this, (e) => {
+                    let target = this.scene2D.getChildByName("home");
+                    target.visible = false;
+                    let sure = this.scene2D.getChildByName("sure");
+                    sure.visible = true;
+                    this.wx.list();
+                    sure.on(Laya.Event.CLICK, this, () => {
+                        this.wx.off();
+                        sure.visible = false;
+                        target.visible = true;
+                    });
+                    console.log("好友排行榜");
+                });
+                // 皮肤
+                skin.on(Laya.Event.CLICK, this, (e) => {
+                    this.scene2D.destroy();
+                    this.Shopping.renderUI(null, () => {
+                        this.Propobj.halo("add", (new Laya.Vector3(-4.6, 30.5, 7)), 0);
+                        this.Lead_cube.transform.position = new Laya.Vector3(-4.6, 31.1, 7);
+                        this.camera.transform.position = new Laya.Vector3(-6.4, 32, 10.6);
+                        this.scene2D = this.animationobj.shopping();
+                    });
+                });
+            };
+            // 状态控制
+            this.Controller = data => {
+                if (data === "start") {
+                    if (!!this.scene2D)
+                        this.scene2D.destroy();
+                    this._index = 0;
+                    this.Recordspot = 0;
+                    this.rendelist = "end"; // 清空渲染队列
+                    Laya.stage.offAll();
+                    this.camera.transform.position = new Laya.Vector3(-1, 10, 6);
+                    this.camera.transform.localRotationEuler = new Laya.Vector3(-15, -25, 2);
+                    this.Lead_cube.transform.position = new Laya.Vector3(0.8, 7, 0);
+                    this.Lead_cube.transform.localRotationEuler = new Laya.Vector3(0, 0, 0);
+                    this.Circumferential = {
+                        angularVelocity: GLOB_Circumferential.angularVelocity,
+                        angle: 0,
+                        speed: GLOB_Circumferential.speed,
+                        increment: GLOB_Circumferential.increment,
+                        radius: 0,
+                        Circular_point: new Laya.Vector3(0.8, 8, 0) // 圆心坐标
+                    };
+                    this.SlantingThrow = {
+                        pos: new Laya.Vector3(0.8, 7, 0),
+                        gravity: 8,
+                        v0: 5,
+                        acceleration: 0,
+                        angle: 45,
+                        time: 0,
+                    };
+                    this.RenderCube(3);
+                    this.cameraAnimation(() => {
+                        this.scene2D = this.animationobj.indexUI();
+                        this.loadAdn();
+                        this.Propobj.halo("add", (new Laya.Vector3(0.8, 7, 0)), 0);
+                        this.npc.comeout(this.Lead_cube, () => {
+                            this.circumference(new Laya.Vector3(0.79, 7, 0)); // 绘制激光线
+                            this.rendelist = [];
+                        });
+                        this.startGame(); // 开始游戏按钮
+                    });
+                    AUDIO.play(TOOLS.getRandomInt(0, 2) ? "bg_1" : "bg_2");
+                }
+                else if (data === "Restart") {
+                }
+            };
+            // 筛取下一个激光点
+            this.Choicespot = data => {
+                let pos, index = 1;
+                let _before = this.dataInfoArray[this.Recordspot][this.dataInfoArray[this.Recordspot].length - 1].pos;
+                let _after = this.dataInfoArray[this.Recordspot + index][this.dataInfoArray[this.Recordspot + index].length - 1].pos;
+                let callback = () => {
+                    if (data.x > _before.x && data.x < _after.x) {
+                        pos = _after;
+                    }
+                    else if (data.x > _after.x) {
+                        index += 1;
+                        _after = this.dataInfoArray[this.Recordspot + index][this.dataInfoArray[this.Recordspot + index].length - 1].pos;
+                        callback();
+                    }
+                    else {
+                        pos = _before;
+                    }
+                };
+                callback();
+                this.Recordspot += index;
+                return new Laya.Vector3(pos.x, pos.y, 0);
+            };
+            // 控制激光线
+            this.Renderingline = (type, angle = null, length = null, pos = null) => {
+                let target = this.ForceLineObj;
+                if (type === true) {
+                    target.transform.position = pos;
+                    target.transform.localRotationEuler = new Laya.Vector3(0, 0, angle + 90);
+                    target._childs[0]._childs[0].transform.localScale = new Laya.Vector3(5, length * 95, 5);
+                }
+                else if (type === false) {
+                    target.transform.position = new Laya.Vector3(0, 0, 0);
+                }
+            };
+            // 计算圆周运动参数
+            this.circumference = pos => {
+                let FoucePosition = this.Choicespot(pos); // 激光点
+                let angle = TOOLS._getAngle(FoucePosition.x, FoucePosition.y, pos.x, pos.y); // 标准角度
+                let length = TOOLS.getline(FoucePosition, pos); // 标准距离
+                // 开启激光线
+                this.Renderingline(true, angle, length, FoucePosition);
+                // 圆周运动参数
+                this.SlantingThrow.time = 0; // 清空斜抛运动的时间
+                this.Circumferential.angle = angle; // 当前角度
+                this.Circumferential.Circular_point = FoucePosition; // 圆心
+                this.Circumferential.radius = length; // 圆半径
+                this.Circumferential.angularVelocity = this.SlantingThrow.v0 / length; // 计算角速度
+                // 开启圆周运动
+                this.rendelist = [this._accelerate, this.collisionDetection.bind(this)];
+            };
+            // 计算抛物运动参数
+            this.parabolic = data => {
+                this.SlantingThrow.pos = data; // 主角坐标
+                this.SlantingThrow.v0 = this.Circumferential.angularVelocity * this.Circumferential.radius; // 线速度
+                this.SlantingThrow.angle = 90 - (360 - (this.Circumferential.angle - Math.round(this.Circumferential.angle / 360) * 360)); // 斜抛角度
+                this.Circumferential.speed = GLOB_Circumferential.speed; // 加速度
+                this.rendelist = [this._whereabouts, this.collisionDetection.bind(this)]; // 开启抛物
+                this.Renderingline(false); //关闭激光线
+            };
+            // 数据格式化
+            this.dataFormat = data => {
+                let _ = [], count = 0;
+                // 存在已用数据时叠加index下标
+                if (this.dataInfoArray.length > 0) {
+                    let _ = this.dataInfoArray[this.dataInfoArray.length - 1];
+                    count = _[_.length - 1].index + 1;
+                }
+                ;
+                data.forEach((element, index) => {
+                    element.index = index + count;
+                    _.push(element);
+                    if (!!element.skill && element.skill === "1") {
+                        element.pos = { x: (index + count + 1) / 2 * 0.8, y: (this.Propobj.CubeSize.Z / 2) + Number(element.hp) };
+                        this.dataInfoArray.push(_);
+                        _ = [];
+                    }
+                    ;
+                });
+            };
+            // 摄像机矫正
+            this._camareCorrect = () => {
+                let leadpos = new Laya.Vector3(0.8, 7, 0); // 主角初始位置
+                let pos = this.Lead_cube.transform.position; // 当前主角位置
+                var x = pos.x - leadpos.x, y = pos.y - leadpos.y; // 主角位置偏移
+                var a = 0, b = 0, time = 100;
+                // x轴偏移
+                var xb = window.setInterval(() => {
+                    b += Math.abs(x / time);
+                    if (b >= Math.abs(x)) {
+                        window.clearInterval(xb);
+                    }
+                    this.camera.transform.translate(new Laya.Vector3(x / time, 0, 0));
+                }, Math.abs(x / time));
+                // y轴偏移
+                var yb = window.setInterval(() => {
+                    a += Math.abs(y / time);
+                    if (a >= Math.abs(y)) {
+                        window.clearInterval(yb);
+                    }
+                    this.camera.transform.translate(new Laya.Vector3(y / time, 0, 0));
+                }, Math.abs(y / time));
+            };
+            // ui动画
+            this.loadAdn = () => {
+                let btn_ground = this.scene2D.getChildByName("home").getChildByName("btn_groug");
+                let logo = this.scene2D.getChildByName("home").getChildByName("logo");
+                animation.move(btn_ground, "y", 700, 500, 0);
+                animation.scale(logo, 1, 1, 1000, 0);
+            };
+            // 广告
+            this.Advertisement = (type) => {
+                if (window["wx"])
+                    return;
+                let bannerAd = window["wx"].createBannerAd({
+                    adUnitId: 'adunit-d707f0634076fb0b',
+                    style: {
+                        left: 0,
+                        top: window.innerHeight,
+                        width: window.innerWidth
+                    }
+                });
+                bannerAd.show();
+                setTimeout(data => { bannerAd.style.top = window.innerHeight - bannerAd.style.realHeight; }, 1000);
+            };
+            // 事件
+            this.eventSwitch = () => {
+                Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.Event_DOWN);
+                Laya.stage.on(Laya.Event.MOUSE_UP, this, this.Event_UP);
+            };
+            this.Event_DOWN = event => {
+                let pos = this.Lead_cube.transform.position;
+                this.circumference(pos); // 计算参数
+            };
+            this.Event_UP = event => {
+                this.rendelist = [];
+                let pos = this.Lead_cube.transform.position;
+                this.parabolic(pos); // 计算参数
+            };
+            // 摄像机动画
+            this.cameraAnimation = (call) => {
+                this.camera.transform.translate((new Laya.Vector3(0, 0, 20)), false);
+                var a = 0;
+                let anim = () => {
+                    if (a >= 20) {
+                        Laya.timer.clear(this, anim);
+                        window.setTimeout(() => {
+                            call(); //执行回调
+                        }, 300);
+                    }
+                    ;
+                    this.camera.transform.translate(new Laya.Vector3(0, 0, -0.2), false);
+                    a += 0.2;
+                };
+                Laya.timer.loop(1, this, anim);
+            };
+            this.RenderCube = (size) => {
+                if (this.dataInfoArray.length - (this._index + size) <= 5) {
+                    let request = TOOLS.Ajax(`https://shop.yunfanshidai.com/xcxht/pqxcx/conf/${this.dataform}.json`);
+                    request.then(data => {
+                        let _data = JSON.parse(Object(data)).data;
+                        this.Router_game = _data;
+                        this.dataFormat(_data);
+                        this.dataform += 1;
+                    });
+                    request.catch(err => {
+                        Laya.loader.load("res/router/Router2.json", Laya.Handler.create(this, () => {
+                            let data = Array.from(Laya.Loader.getRes('res/router/Router2.json').data);
+                            this.Router_game = data;
+                            this.dataFormat(data);
+                        }));
+                    });
+                }
+                for (let i = size; i--;) {
+                    let data;
+                    if (this._index >= this.dataInfoArray.length) {
+                        data = this.dataInfoArray[this.dataInfoArray.length - 1];
+                        this.dataInfoArray[this.dataInfoArray.length - 1].index += 1;
+                    }
+                    else {
+                        data = this.dataInfoArray[this._index];
+                    }
+                    data.forEach(element => {
+                        this.AddBox(element);
+                    });
+                    this._index += 1;
+                }
+                this.TemporaryVariable.cleateBoxStatus = true;
+            };
+            this.AddBox = data => {
+                let box = this.Propobj.pullcube((this.cube_bg_type) ? "top" : "bottom"), index = data.index, height = Number(data.hp);
+                this.Game_scene.addChild(box);
+                if (!box)
+                    console.log("无法从对象池请求对象");
+                if (index % 2 === 0) { // 下部
+                    let Box_X = (index + 2) / 2 * this.Propobj.CubeSize.X;
+                    let Box_Y = (this.Propobj.CubeSize.Z / 2) + height;
+                    box.transform.translate(new Laya.Vector3(Box_X, Box_Y, 0));
+                    this.cube_bg_type = !this.cube_bg_type;
+                }
+                else {
+                    let Box_X = ((index + 1) / 2) * this.Propobj.CubeSize.X;
+                    let Box_Y = (this.Propobj.CubeSize.Z / 2) + height;
+                    // 道具
+                    if (!!data.drop) {
+                        let top = height;
+                        let bottom = this.Propobj.CubeSize.Z + Number(this.Router_game[data.index - 1].hp);
+                        let pos = new Laya.Vector3(Box_X, (top - bottom) / 2 + bottom, 0);
+                        if (data.drop === "1") {
+                            this.Propobj.getProp(0, pos);
+                        }
+                        else if (data.drop === "2") {
+                            this.Propobj.getProp(1, pos);
+                        }
+                        else if (data.drop === "3") {
+                            this.Propobj.getProp(2, pos);
+                        }
+                    }
+                    box.transform.translate(new Laya.Vector3(Box_X, Box_Y, 0));
+                }
+            };
+            this.fractoinatr = () => {
+                // 分数控制逻辑
+                var _ = (this.scene2D.getChildByName("game").getChildByName("Fraction"));
+                _.visible = true;
+                window.setInterval(() => {
+                    if (this.scoreCalculation) {
+                        this._Fraction = _.value = String(this.Scorevalue += 1);
+                    }
+                    ;
+                }, 1500);
+            };
+            // 圆周运动
+            this._accelerate = data => {
+                let self = this, pos = data.pos;
+                let office = self.circularMotion(self.Circumferential.angle, pos, this.Circumferential.Circular_point, this.Circumferential.radius, this.Lead_cube);
+                let tg = ((Laya.timer.delta / 1000 * self.Circumferential.angularVelocity) * 180 / Math.PI); // 角度增量    
+                self.Circumferential.angle += tg; // 计算角度
+                self.Circumferential.angularVelocity += self.Circumferential.speed; // 递增角速度
+                this.Lead_cube.transform.rotate(new Laya.Vector3(0, 0.05, 0));
+                this.ForceLineObj.transform.localRotationEuler = new Laya.Vector3(0, 0, self.Circumferential.angle + 90);
+                self.camera.transform.translate(new Laya.Vector3(office.x, office.y, 0), false);
+            };
+            // 斜抛运动
+            this._whereabouts = data => {
+                let self = this, pos = data.pos;
+                let _ = self.SlantingMotion(self.SlantingThrow.angle, self.SlantingThrow.time, self.SlantingThrow.v0, 1);
+                self.SlantingThrow.time += (Laya.timer.delta / 1000);
+                let vect3 = new Laya.Vector3(this.SlantingThrow.pos.x + _.X, this.SlantingThrow.pos.y + _.Y, 0); // 位移向量
+                this.camera.transform.translate(new Laya.Vector3(vect3.x - pos.x, vect3.y - pos.y), false);
+                this.Lead_cube.transform.position = vect3;
+                this.Lead_cube.transform.rotate(new Laya.Vector3(0, 0.1, 0));
+                self.Circumferential.angularVelocity -= self.Circumferential.speed; // 递减角速度
+            };
+            Laya.loader.load([
+                "res/atlas/index.atlas"
+            ], Laya.Handler.create(this, this.main));
+        }
+        // 圆周运动算法
+        circularMotion(angle, pos, contercircle, radius, target) {
+            let target_X = contercircle.x + radius * Math.cos(angle * Math.PI / 180);
+            let target_Y = contercircle.y + radius * Math.sin(angle * Math.PI / 180);
+            target.transform.position = new Laya.Vector3(target_X, target_Y, 0);
+            return { x: target_X - pos.x, y: target_Y - pos.y, pos: { x: target_X, y: target_Y } };
+        }
+        // 斜抛运动算法
+        SlantingMotion(angle, time, speed, scale = 1) {
+            let X, Y;
+            X = speed * Math.cos(angle * Math.PI / 180) * time; // 水平距离
+            Y = speed * Math.sin(angle * Math.PI / 180) * time - (this.SlantingThrow.gravity * (time * time)) / 2; // 垂直距离
+            X = X * scale;
+            Y = Y * scale;
+            return { X, Y };
+        }
+        // 碰撞检测
+        collisionDetection(target) {
+            let pos = target.pos;
+            let Targetpoint = this.dataInfoArray[this._index - 1][this.dataInfoArray[this._index - 1].length - 1].pos; // 当前页面已渲染且最远距离的激光点坐标
+            let i = Math.round(pos.x / this.Propobj.CubeSize.X);
+            if (i <= 0)
+                i = 1;
+            let top = 2 * i - 1; //上方数据索引
+            let bottom = top - 1; //下方数据索引
+            let max = Number(this.Router_game[top].hp); // 上部数据
+            let min = Number(this.Router_game[bottom].hp); // 下部数据
+            let max_height = max; // 最高高度
+            let min_height = min + this.Propobj.CubeSize.Z; // 最低高度 
+            if (pos.y >= max_height || pos.y <= min_height) {
+                this.rendelist = "end";
+                this.scoreCalculation = false;
+                Laya.stage.off(Laya.Event.MOUSE_DOWN, this, this.Event_DOWN);
+                Laya.stage.off(Laya.Event.MOUSE_UP, this, this.Event_UP);
+                this.animationobj.shake(this.camera, 100, () => {
+                    this.ForceLineObj.transform.position = new Laya.Vector3(-5, 0, 0);
+                    this.animationobj.CountDown({
+                        callback: () => {
+                            this.gameover();
+                        }
+                    });
+                });
+            }
+            if ("drop" in this.Router_game[top] && this.Router_game[top].drop.length > 0) {
+                let topY = Number(this.Router_game[top].hp);
+                let bottomY = this.Propobj.CubeSize.Z + Number(this.Router_game[bottom].hp);
+                let dropMaxheight = (topY - bottomY) / 2 + bottomY; // 道具Y轴范围
+                if (pos.y <= dropMaxheight + 0.25 && pos.y >= dropMaxheight - 0.25) {
+                    console.log("获得道具", dropMaxheight);
+                }
+            }
+            if (pos.x >= Targetpoint.x - 3.2 && this.TemporaryVariable.cleateBoxStatus) {
+                this.TemporaryVariable.cleateBoxStatus = false;
+                this.RenderCube(1);
+            }
+        }
+        gameover() {
+            this.scene2D.destroy(); //清空index场景
+            let scene = Laya.stage.addChild(new ui.alertUI);
+            this.scene2D = scene;
+            scene.zOrder = 999;
+            let btn = scene.getChildByName("reset");
+            let share = scene.getChildByName("share");
+            btn.on(Laya.Event.CLICK, this, () => {
+                this.Controller("start");
+            });
+            share.on(Laya.Event.CLICK, this, () => {
+                //分享
+                this.wx.share();
+            });
+        }
+        // 渲染队列
+        updata() {
+            let _callback = () => {
+                let pos = this.Lead_cube.transform.position;
+                if (this.rendelist === "end") {
+                    console.log("结束帧循环");
+                    return;
+                }
+                ;
+                this.rendelist.forEach((fun) => {
+                    fun({ pos: pos });
+                });
+                window.requestAnimationFrame(_callback);
+            };
+            window.requestAnimationFrame(_callback);
+        }
+        // 全局变量转换接口
+        Global_obj() {
+            window['Lead'] = this.Lead_cube; // 主角
+            window["camera"] = this.camera; // 摄像机
+            window["foce"] = this.ForceLineObj; //着力线
+            window["scene2D"] = this.scene2D; //2d场景
+            window["move"] = this.SlantingMotion; //斜抛算法
+            window["add"] = this.RenderCube; // 方块生成
+            window["Controller"] = this.Controller; // 游戏状态切换
+            window["Choicespot"] = this.Choicespot; // 激光点选取
+            window["aa"] = this.circularMotion.bind(this);
+            window["over"] = this.animationobj.CountDown;
+            window["shake"] = this.animationobj.shake;
+            window["moveto"] = this.animationobj.moveto;
+            window["gameover"] = this.gameover.bind(this);
+            window["getProp"] = this.Propobj.getProp;
+            window["halo"] = this.Propobj.halo;
+        }
+    }
+    WetchGame.gameScene = gameScene;
+})(WetchGame || (WetchGame = {}));
+//# sourceMappingURL=game.js.map
+const wx = window["wx"];
+var WetchGame;
+(function (WetchGame) {
+    class Wetch {
+        constructor(ctx) {
+            this.main = () => {
+                if (!wx)
+                    return;
+                let screenHeight = window.innerHeight;
+                let screenWidth = window.innerWidth;
+                let openDataContext = wx.getOpenDataContext();
+                let sharedCanvas = openDataContext.canvas;
+                let ratio = wx.getSystemInfoSync().pixelRatio;
+                sharedCanvas.width = screenWidth * ratio;
+                sharedCanvas.height = screenHeight * ratio;
+                var sprite = new Laya.Sprite();
+                sprite.pos(0, 0);
+                this.render = sprite;
+                let self = this;
+                wx.request({
+                    url: 'https://shop.yunfanshidai.com/xcxht/bigbattle/api/share_info.php?gameid=18',
+                    header: {
+                        'content-type': 'application/json' // 默认值
+                    },
+                    success: function (res) {
+                        // console.log(res.data);
+                        // 主动转发
+                        self.share = () => {
+                            wx.shareAppMessage(function () {
+                                return {
+                                    title: res.data.info,
+                                    imageUrl: res.data.image
+                                };
+                            });
+                        };
+                        // 被动转发
+                        wx.showShareMenu({ withShareTicket: true });
+                        wx.onShareAppMessage(function () {
+                            return {
+                                title: res.data.info,
+                                imageUrl: res.data.image
+                            };
+                        });
+                    }
+                });
+                wx.setPreferredFramesPerSecond(60);
+                let bannerAd = wx.createBannerAd({
+                    adUnitId: 'adunit-d707f0634076fb0b',
+                    style: {
+                        left: 0,
+                        top: 500,
+                        width: window.innerWidth
+                    }
+                });
+                let videoAd = wx.createRewardedVideoAd({
+                    adUnitId: 'adunit-68bfd9849e874c25'
+                });
+                this.bannerAd = bannerAd;
+                this.videoAd = videoAd;
+                bannerAd.show();
+                setTimeout(() => { bannerAd.style.top = window.innerHeight - bannerAd.style.realHeight; }, 1000);
+            };
+            // 排行榜
+            this.list = () => {
+                wx.postMessage({ type: 2 });
+                this.render.clearTimer(this, this.callback);
+                this.callback = () => {
+                    console.log("排行榜");
+                    var texture = new Laya.Texture(Laya.Browser.window.sharedCanvas);
+                    this.render.graphics.drawTexture(texture, 0, 0, texture.width, texture.height);
+                    Laya.stage.addChild(this.render);
+                };
+                this.render.timer.frameLoop(10, this, this.callback);
+            };
+            // 得分面板
+            this.Scorelist = (score) => {
+                wx.postMessage({ type: 1, data: { score: score } });
+                this.render.clearTimer(this, this.callback);
+                this.callback = () => {
+                    console.log("得分面板");
+                    var texture = new Laya.Texture(Laya.Browser.window.sharedCanvas);
+                    this.render.graphics.drawTexture(texture, 0, 0, texture.width, texture.height);
+                    Laya.stage.addChild(this.render);
+                };
+                this.render.timer.frameLoop(10, this, this.callback);
+            };
+            // 关闭渲染
+            this.off = () => {
+                this.render.clearTimer(this, this.callback);
+                this.render.destroy();
+            };
+            // 主动分享
+            this.share = () => {
+            };
+            this.main();
+        }
+    }
+    WetchGame.Wetch = Wetch;
+})(WetchGame || (WetchGame = {}));
+//# sourceMappingURL=wx.js.map
+// 方块 道具
+var WetchGame;
+(function (WetchGame) {
+    class Propobj {
+        constructor(ctx) {
+            this.CubeLength = 20;
+            this.CubeSize = { X: 0.8, Y: 0.5, Z: 5 };
+            this.Cubelist = []; // 方块池
+            this.proplist = []; // 道具池
+            this.haloObj = null; // 光环
+            this.texturelist = [
+                [
+                    "res/image/color/1.png",
+                    "res/image/color/1-1.png"
+                ],
+                [
+                    "res/image/color/2.png",
+                    "res/image/color/2-2.png"
+                ],
+                [
+                    "res/image/color/3.png",
+                    "res/image/color/3-3.png"
+                ],
+                [
+                    "res/image/color/4.png",
+                    "res/image/color/4-4.png"
+                ],
+            ];
+            // 道具
+            this.balltexture = [
+                "https://shop.yunfanshidai.com/xcxht/pqxcx/conf/prop/Sign_1.lh",
+                "https://shop.yunfanshidai.com/xcxht/pqxcx/conf/prop/Sign_2.lh",
+                "https://shop.yunfanshidai.com/xcxht/pqxcx/conf/prop/Sign_3.lh"
+            ];
+            // 光环
+            this.haloTexture = [
+                "https://shop.yunfanshidai.com/xcxht/pqxcx/model/Halo2.lh"
+            ];
+            // 激光线
+            this._line = [
+                "https://shop.yunfanshidai.com/xcxht/pqxcx/model/line/Cube.lh"
+            ];
+            this.init = () => {
+                var box2 = Laya.Sprite3D.load(this._line[0]);
+                // var box2: Laya.Sprite3D = Laya.Sprite3D.load("res/model/line1.lh");
+                box2.on(Laya.Event.HIERARCHY_LOADED, this, () => {
+                    box2.transform.position = new Laya.Vector3(0, 0, 0);
+                });
+                this.ctx.Game_scene.addChild(box2);
+                // 创建方块队列
+                let list = [[], []];
+                for (let i = this.CubeLength; i--;) {
+                    if (i < this.CubeLength / 2) {
+                        list[0].push(this.createCube("bottom"));
+                    }
+                    else {
+                        list[1].push(this.createCube("top"));
+                    }
+                }
+                // 创建道具队列
+                for (let i = 0; i < this.balltexture.length; i++) {
+                    let obj = [];
+                    for (let j = 0; j < 2; j++) {
+                        var sprite3D = Laya.Sprite3D.load(this.balltexture[i]);
+                        sprite3D.on(Laya.Event.HIERARCHY_LOADED, this, () => {
+                            sprite3D.transform.localScale = new Laya.Vector3(0.1, 0.1, 0.1);
+                        });
+                        obj.push(sprite3D);
+                    }
+                    this.proplist.push(obj);
+                }
+                console.log(this.proplist);
+                this.Laserline = box2;
+                this.Cubelist = list;
+            };
+            // 光环
+            this.halo = (type, pos = null, texture = null) => {
+                if (type === "add") {
+                    if (!!this.haloObj) {
+                        this.haloObj.transform.position = pos;
+                        if (!this.haloObj.displayedInStage)
+                            this.ctx.Game_scene.addChild(halo_obj);
+                    }
+                    else {
+                        var halo_obj = Laya.Sprite3D.load(this.haloTexture[texture]);
+                        halo_obj.on(Laya.Event.HIERARCHY_LOADED, this, () => {
+                            halo_obj.transform.position = pos;
+                        });
+                        if (!halo_obj.displayedInStage)
+                            this.ctx.Game_scene.addChild(halo_obj);
+                        this.haloObj = halo_obj;
+                    }
+                }
+                else if (type === "delete") {
+                    if (!!this.haloObj) {
+                        this.haloObj.destroy();
+                    }
+                }
+                return this.haloObj;
+            };
+            // 创建立方体
+            this.createCube = type => {
+                let box = new Laya.MeshSprite3D(new Laya.BoxMesh(this.CubeSize.X, this.CubeSize.Y, this.CubeSize.Z));
+                let material = new Laya.StandardMaterial();
+                if (type === "top") {
+                    material.diffuseTexture = Laya.Texture2D.load(this.texturelist[1][0]);
+                }
+                else if (type === "bottom") {
+                    material.diffuseTexture = Laya.Texture2D.load(this.texturelist[1][1]);
+                }
+                box.meshRender.material = material;
+                return box;
+            };
+            // 获取立方体
+            this.pullcube = type => {
+                let data;
+                if (type === "top") {
+                    data = this.Cubelist[1].shift();
+                    this.Cubelist[1].push(data);
+                }
+                else if (type === "bottom") {
+                    data = this.Cubelist[0].shift();
+                    this.Cubelist[0].push(data);
+                }
+                data.transform.position = new Laya.Vector3(0, 0, 0);
+                return data;
+            };
+            // 旋转动画
+            this.rotateadmin = data => {
+                data.transform.rotate(new Laya.Vector3(0, 0.05, 0));
+            };
+            // 添加道具
+            this.getProp = (type, pos) => {
+                let target = this.proplist[type].shift();
+                target.transform.localScale = (new Laya.Vector3(0.3, 0.3, 0.3));
+                target.clearTimer(this, this.rotateadmin);
+                this.proplist[type].push(target);
+                target.transform.position = pos;
+                if (!target.displayedInStage)
+                    this.ctx.Game_scene.addChild(target);
+                target.frameLoop(2, this, this.rotateadmin, [target]);
+                return target;
+            };
+            this.ctx = ctx;
+        }
+    }
+    WetchGame.Propobj = Propobj;
+})(WetchGame || (WetchGame = {}));
+//# sourceMappingURL=obj.js.map
+// 主角类
+var WetchGame;
+(function (WetchGame) {
+    class npc {
+        constructor(ctx) {
+            this.skinURL = [
+                "https://shop.yunfanshidai.com/xcxht/pqxcx/model/Lead1.lh",
+                "https://shop.yunfanshidai.com/xcxht/pqxcx/model/Lead2.lh",
+                "https://shop.yunfanshidai.com/xcxht/pqxcx/model/Lead3.lh",
+                "https://shop.yunfanshidai.com/xcxht/pqxcx/model/Lead4.lh"
+            ];
+            this._over = [
+                "https://shop.yunfanshidai.com/xcxht/pqxcx/model/over.lh"
+            ];
+            this.init = (data) => {
+                if (!data || !("skin" in data) || !("scene" in data)) {
+                    console.log("error =>class npc", "参数不对");
+                }
+                else {
+                    var sprite3D = Laya.Sprite3D.load(this.skinURL[data.skin]);
+                    this.ME = sprite3D;
+                    sprite3D.on(Laya.Event.HIERARCHY_LOADED, this, () => {
+                        sprite3D.transform.position = new Laya.Vector3(0.8, 9, 0);
+                        sprite3D.transform.localScale = new Laya.Vector3(0.1, 0.1, 0.1);
+                    });
+                    data.scene.addChild(this.ME);
+                }
+            };
+            this.comeout = (data, callback = null) => {
+                // 主角出场动画
+                if (!!this.admincomeout)
+                    return;
+                var target = data.transform.position.y - 7, value = 0;
+                var a = window.setInterval(() => {
+                    value += 0.01;
+                    if (value >= target) {
+                        if (!!callback)
+                            callback();
+                        window.clearInterval(a);
+                        data.transform.localRotationEuler = new Laya.Vector3(0, 0, 0);
+                        data.transform.position = new Laya.Vector3(0.8, 7, 0);
+                    }
+                    data.transform.translate(new Laya.Vector3(0, -0.01, 0));
+                    data.transform.rotate(new Laya.Vector3(0, -0.03, 0));
+                }, 1);
+                this.admincomeout = a;
+            };
+            this.over = (data, callback) => {
+                this.ME.transform.position = new Laya.Vector3(0.8, 7, 0);
+                var sprite3D = Laya.Sprite3D.load(this._over[0]);
+                sprite3D.on(Laya.Event.HIERARCHY_LOADED, this, () => {
+                    sprite3D.transform.position = data;
+                    if (!!callback)
+                        callback();
+                });
+                this.ctx.Game_scene.scene.addChild(sprite3D);
+            };
+            this.skinRender = data => {
+            };
+            this.Destroy = data => {
+            };
+            this.ctx = ctx;
+        }
+    }
+    WetchGame.npc = npc;
+})(WetchGame || (WetchGame = {}));
+//# sourceMappingURL=npc.js.map
+// 动画与UI类
+var WetchGame;
+(function (WetchGame) {
+    class animationUI {
+        constructor(ctx) {
+            this.shakeadmin = null; // 抖动对象
+            // 复活倒计时界面
+            this.CountDown = (data = null) => {
+                let _size = {
+                    btn1: { w: Laya.stage.width / 2.5, h: Laya.stage.width / 2.5 },
+                }, _time = 500;
+                let target = new Laya.Sprite();
+                target.size(_size.btn1.w, _size.btn1.h);
+                target.pos(Laya.stage.width / 2 - _size.btn1.w / 2, Laya.stage.height / 4 - _size.btn1.h / 2);
+                target.zOrder = 101;
+                target.alpha = .9;
+                var img = new Laya.Sprite();
+                img.zOrder = 101;
+                img.loadImage("res/image/color/play_again.png");
+                img.size(_size.btn1.w, _size.btn1.h / 2);
+                img.pos(Laya.stage.width / 2 - _size.btn1.w / 2, Laya.stage.height / 1.5 - _size.btn1.h / 2);
+                let mask = new Laya.Sprite();
+                mask.alpha = .5;
+                mask.zOrder = 99;
+                mask.graphics.drawRect(0, 0, Laya.stage.width, Laya.stage.height, "#000000");
+                let label = new Laya.Text();
+                label.text = "跳过";
+                label.fontSize = 50;
+                label.color = "#ffffff";
+                label.x = Laya.stage.width / 2 - 50;
+                label.y = Laya.stage.height / 2.3;
+                label.zOrder = 101;
+                Laya.stage.addChild(img);
+                Laya.stage.addChild(target);
+                Laya.stage.addChild(label);
+                Laya.stage.addChild(mask);
+                target.on(Laya.Event.CLICK, this, () => {
+                    Laya.timer.clear(this, fun);
+                    this.ctx.wx.videoAd.shadow();
+                });
+                img.on(Laya.Event.CLICK, this, () => {
+                    this.ctx.Controller("start"); // 进入游戏    
+                    target.destroy();
+                    Laya.timer.clear(this, fun);
+                    target.offAll(Laya.Event.CLICK);
+                    img.offAll(Laya.Event.CLICK);
+                    label.offAll(Laya.Event.CLICK);
+                    target.destroy();
+                    img.destroy();
+                    mask.destroy();
+                    label.destroy();
+                    return;
+                });
+                label.on(Laya.Event.CLICK, this, () => {
+                    // this.ctx.Controller("start");// 进入游戏    
+                    target.destroy();
+                    Laya.timer.clear(this, fun);
+                    target.offAll(Laya.Event.CLICK);
+                    img.offAll(Laya.Event.CLICK);
+                    label.offAll(Laya.Event.CLICK);
+                    target.destroy();
+                    img.destroy();
+                    mask.destroy();
+                    label.destroy();
+                    if (!!data && "callback" in data)
+                        data.callback();
+                    return;
+                });
+                // 圆环转动
+                var fun = () => {
+                    _time -= 1;
+                    target.graphics.clear();
+                    target.graphics.drawCircle(_size.btn1.w / 2, _size.btn1.h / 2, _size.btn1.w / 2, "#cccccc"); // 背景
+                    target.graphics.drawPie(_size.btn1.w / 2, _size.btn1.h / 2, _size.btn1.w / 2, 0, 360 * (_time / 500), "#1fbb25"); // 进度环
+                    target.graphics.drawCircle(_size.btn1.w / 2, _size.btn1.h / 2, _size.btn1.w / 2 - 40, "#ffffff");
+                    target.graphics.fillText("复活", _size.btn1.w / 2, _size.btn1.h / 2.5, "40px SimHei", "#1fbb25", "center");
+                    if (_time <= 1) {
+                        Laya.timer.clear(this, fun);
+                        if (!!data && "callback" in data)
+                            data.callback();
+                        target.offAll(Laya.Event.CLICK);
+                        img.offAll(Laya.Event.CLICK);
+                        target.destroy();
+                        img.destroy();
+                        mask.destroy();
+                        label.destroy();
+                        return;
+                    }
+                };
+                Laya.timer.frameLoop(1, this, fun);
+            };
+            // 3d场景
+            this.initScene = () => {
+                let bgobj = [];
+                //添加3D场景
+                var scene = Laya.stage.addChild(new Laya.Scene());
+                //添加摄像机
+                var camera = (scene.addChild(new Laya.Camera(0, 0.1, 100)));
+                camera.transform.position = new Laya.Vector3(-1, 10, 6);
+                camera.transform.localRotationEuler = new Laya.Vector3(-15, -25, 2);
+                camera.clearColor = new Laya.Vector4(0.2, 0.5, 0.6, 1);
+                //平行光
+                var directionLight = scene.addChild(new Laya.DirectionLight());
+                directionLight.direction = new Laya.Vector3(2, -2, -3);
+                directionLight.shadow = false;
+                // for (let i = 0; i < 3; i++) {
+                //     //添加背景
+                //     var bottombox: Laya.MeshSprite3D = scene.addChild(new Laya.MeshSprite3D(new Laya.BoxMesh(bgsize.X, bgsize.Y, bgsize.Z))) as Laya.MeshSprite3D;
+                //     var material: Laya.StandardMaterial = new Laya.StandardMaterial();
+                //     material.diffuseTexture = Laya.Texture2D.load("res/image/color/floor.png");
+                //     bottombox.meshRender.material = material;
+                //     bottombox.transform.position = new Laya.Vector3(5 + bgsize.X * i, 0, -10);
+                //     bgobj.push(bottombox);
+                // }
+                //开启雾化效果
+                scene.enableFog = true;
+                //设置雾化的颜色
+                scene.fogColor = new Laya.Vector3(0.2, 0.5, 0.6);
+                //设置雾化的起始位置，相对于相机的距离
+                scene.fogStart = 10;
+                //设置雾化最浓处的距离。
+                scene.fogRange = 30;
+                return {
+                    scene: scene,
+                    camera: camera,
+                    directionLight: directionLight,
+                    bgobj: bgobj
+                };
+            };
+            // index界面
+            this.indexUI = () => {
+                let scene = Laya.stage.addChild(new ui.indexUI);
+                scene.stage.scaleMode = Laya.Stage.SCALE_EXACTFIT;
+                scene.stage.screenMode = Laya.Stage.SCREEN_NONE;
+                scene.zOrder = 100;
+                return scene;
+            };
+            this._a = () => {
+                this.ctx.Lead_cube.transform.rotate(new Laya.Vector3(0, -.01, 0));
+            };
+            // 商城界面
+            this.shopping = () => {
+                this.ctx.Lead_cube.timerLoop(10, this, this._a);
+                let scene = Laya.stage.addChild(new ui.shoppingUI);
+                scene.stage.scaleMode = Laya.Stage.SCALE_EXACTFIT;
+                scene.stage.screenMode = Laya.Stage.SCREEN_NONE;
+                scene.zOrder = 101;
+                var sure = scene.getChildByName("Sure");
+                var returnbtn = scene.getChildByName("return");
+                sure.on(Laya.Event.CLICK, this, () => {
+                    this.ctx.camera.transform.position = new Laya.Vector3(-1, 10, 6);
+                    this.ctx.camera.transform.localRotationEuler = new Laya.Vector3(-15, -25, 2);
+                    this.ctx.Lead_cube.transform.position = new Laya.Vector3(0.8, 7, 0);
+                    scene.destroy();
+                    this.ctx.Lead_cube.clearTimer(this, this._a);
+                    // this.ctx.Controller("start");
+                    this.ctx.scene2D = this.indexUI();
+                    this.ctx.loadAdn();
+                    this.ctx.startGame();
+                    this.ctx.Propobj.halo("add", (new Laya.Vector3(0.8, 7, 0)), 0);
+                });
+                returnbtn.on(Laya.Event.CLICK, this, () => {
+                    this.ctx.camera.transform.position = new Laya.Vector3(-1, 10, 6);
+                    this.ctx.camera.transform.localRotationEuler = new Laya.Vector3(-15, -25, 2);
+                    this.ctx.Lead_cube.transform.position = new Laya.Vector3(0.8, 7, 0);
+                    scene.destroy();
+                    this.ctx.Lead_cube.clearTimer(this, this._a);
+                    // this.ctx.Controller("start");         
+                    this.ctx.scene2D = this.indexUI();
+                    this.ctx.loadAdn();
+                    this.ctx.startGame();
+                });
+                return scene;
+            };
+            // 摄像机抖动
+            this.shake = (target, frequency, callback = null) => {
+                let pos = target.transform.position;
+                let a = true, _frequency = 0;
+                let admin = window.setInterval(() => {
+                    if (_frequency >= frequency) {
+                        window.clearInterval(admin);
+                        target.transform.position = pos;
+                        if (!!callback)
+                            callback();
+                    }
+                    ;
+                    a = !a;
+                    _frequency += 1;
+                    if (a) {
+                        target.transform.translate(new Laya.Vector3(0.1, 0.1, 0));
+                    }
+                    else {
+                        target.transform.translate(new Laya.Vector3(-0.1, -0.1, 0));
+                    }
+                }, 6);
+            };
+            // 位移动画函数
+            this.moveto = (target, value, time, callback = null) => {
+                let pos = target.transform.position;
+                // 速度
+                let speed_X = Math.abs(value.x - pos.x) / time, speed_Y = Math.abs(value.y - pos.y) / time, speed_Z = Math.abs(value.z - pos.z) / time;
+                // 单位时间移动量
+                let office_X = (value.x - pos.x) / time * 0.006;
+                let office_Y = (value.y - pos.y) / time * 0.006;
+                let office_Z = (value.z - pos.z) / time * 0.006;
+                window.setTimeout(() => {
+                    window.clearInterval(a);
+                    console.log("停止动画");
+                    if (!!callback)
+                        callback();
+                }, time * 1000);
+                var a = window.setInterval(() => {
+                    target.transform.translate(new Laya.Vector3(office_X, office_Y, office_Z));
+                }, 6);
+            };
+            this.ctx = ctx;
+        }
+    }
+    WetchGame.animationUI = animationUI;
+})(WetchGame || (WetchGame = {}));
+//# sourceMappingURL=animation.js.map
+// 商城 
+var WetchGame;
+(function (WetchGame) {
+    class Shopping {
+        constructor(ctx) {
+            this.objpool = []; // 对象池
+            this.main = () => {
+                for (let i = 0; i < this.skin.length; i++) {
+                    console.log(this.skin[i]);
+                    // let sprite3D: Laya.Sprite3D = Laya.loader.getRes(this.skin[i].url);
+                    // this.objpool.push(sprite3D);
+                }
+                // console.log(this.objpool);
+            };
+            // 开启商城界面
+            this.renderUI = (data = null, callback = null) => {
+                this.ctx.animationobj.moveto(this.ctx.camera, new Laya.Vector3(-3, 30, 18), 1, () => {
+                    if (!!callback)
+                        callback();
+                });
+            };
+            // 清空资源并回收
+            this.delete = data => {
+            };
+            this.ctx = ctx;
+            // this.skin = ctx.npc.skinURL;
+            // console.log(ctx.npc.skinURL);
+            // Laya.loader.create(this.skin, Laya.Handler.create(this, this.main));
+        }
+    }
+    WetchGame.Shopping = Shopping;
+})(WetchGame || (WetchGame = {}));
+//# sourceMappingURL=Shopping.js.map
 var View = laya.ui.View;
 var Dialog = laya.ui.Dialog;
 var ui;
@@ -96883,20 +97357,30 @@ var ui;
             this.createView(ui.alertUI.uiView);
         }
     }
-    alertUI.uiView = { "type": "Dialog", "props": { "width": 720, "height": 1280 }, "child": [{ "type": "Button", "props": { "y": 1020, "x": 70, "var": "reset", "stateNum": 1, "skin": "index/btn_play_againx.png", "name": "reset" } }, { "type": "Button", "props": { "y": 1042, "x": 509, "width": 185, "var": "share", "stateNum": 1, "skin": "index/share.png", "name": "share", "height": 107 } }] };
+    alertUI.uiView = { "type": "Dialog", "props": { "width": 720, "height": 1280 }, "child": [{ "type": "Button", "props": { "y": 794, "x": 134, "var": "reset", "stateNum": 1, "skin": "index/btn_play_againx.png", "name": "reset" } }, { "type": "Button", "props": { "y": 970, "x": 257, "width": 185, "var": "share", "stateNum": 1, "skin": "index/share.png", "name": "share", "height": 107 } }] };
     ui.alertUI = alertUI;
 })(ui || (ui = {}));
 (function (ui) {
     class indexUI extends Dialog {
         constructor() { super(); }
         createChildren() {
-            View.regComponent("Text", laya.display.Text);
             super.createChildren();
             this.createView(ui.indexUI.uiView);
         }
     }
-    indexUI.uiView = { "type": "Dialog", "props": { "width": 720, "height": 1280 }, "child": [{ "type": "Image", "props": { "y": 0, "x": -249, "width": 1200, "skin": "index/vignette.png", "rotation": 0, "height": 1280 } }, { "type": "Box", "props": { "y": 0, "x": 3, "width": 720, "var": "home", "name": "home", "height": 1280 }, "child": [{ "type": "Image", "props": { "y": 215, "x": 342, "width": 395, "var": "logo", "skin": "index/logo.png", "scaleY": 0.5, "scaleX": 0.5, "name": "logo", "height": 336, "anchorY": 0.5, "anchorX": 0.5 }, "child": [{ "type": "Image", "props": { "y": -12, "x": 219, "width": 86, "skin": "index/i.png", "rotation": 0, "height": 86 } }] }, { "type": "Image", "props": { "width": 140, "var": "left_d", "top": 199, "skin": "index/d.png", "name": "left_d", "left": -299, "height": 301 } }, { "type": "Image", "props": { "width": 267, "var": "left_a", "top": 331, "skin": "index/k.png", "name": "left_a", "left": -300, "height": 267 } }, { "type": "Image", "props": { "width": 240, "var": "left_b", "top": 600, "skin": "index/f.png", "name": "left_b", "left": -300, "height": 349 } }, { "type": "Image", "props": { "width": 227, "var": "right_c", "top": 228, "skin": "index/j.png", "name": "right_c", "left": 718, "height": 144 } }, { "type": "Image", "props": { "width": 204, "var": "right_a", "top": 344, "skin": "index/e.png", "name": "right_a", "left": 718, "height": 327 } }, { "type": "Image", "props": { "width": 201, "var": "right_b", "top": 622, "skin": "index/g.png", "name": "right_b", "left": 718, "height": 363 } }, { "type": "Image", "props": { "width": 128, "var": "left_c", "top": 753, "skin": "index/c.png", "name": "left_c", "left": -153, "height": 120 } }, { "type": "Text", "props": { "y": 860, "x": 161, "var": "title", "text": "按住可加速 松开可飞行", "name": "title", "fontSize": 40, "font": "Microsoft YaHei", "color": "#ffffff", "bold": false, "alpha": 1 } }, { "type": "Box", "props": { "x": 36, "var": "btn_groug", "top": 1280, "name": "btn_groug" }, "child": [{ "type": "Image", "props": { "y": 188, "x": 200, "skin": "index/sbtn_2.png" }, "child": [{ "type": "Image", "props": { "y": -109, "x": -102, "skin": "index/sbtn_1.png" } }] }, { "type": "Image", "props": { "y": 66, "width": 170, "var": "setup", "skin": "index/gamelist.png", "name": "setup", "height": 120 } }, { "type": "Image", "props": { "y": 66, "x": 479, "width": 173, "var": "skin", "skin": "index/shop.png", "name": "skin", "height": 120 } }, { "type": "Button", "props": { "x": 169, "width": 314, "var": "start", "stateNum": 1, "skin": "index/begin.png", "name": "start", "height": 197 } }] }] }, { "type": "Box", "props": { "y": 158, "x": 340, "var": "game", "name": "game" }, "child": [{ "type": "FontClip", "props": { "y": 8, "x": 2, "visible": false, "var": "Fraction", "value": "0", "skin": "index/num.png", "sheet": "0123456789", "name": "Fraction" } }] }] };
+    indexUI.uiView = { "type": "Dialog", "props": { "width": 720, "height": 1280 }, "child": [{ "type": "Box", "props": { "y": 0, "x": 3, "width": 720, "var": "home", "name": "home", "height": 1280 }, "child": [{ "type": "Image", "props": { "y": 215, "x": 342, "width": 395, "var": "logo", "skin": "index/logo.png", "scaleY": 0.5, "scaleX": 0.5, "name": "logo", "height": 336, "anchorY": 0.5, "anchorX": 0.5 } }, { "type": "Box", "props": { "x": 36, "var": "btn_groug", "top": 1280, "name": "btn_groug" }, "child": [{ "type": "Image", "props": { "y": 77, "x": 30, "width": 100, "var": "setup", "skin": "index/frans.png", "name": "setup", "height": 120 } }, { "type": "Image", "props": { "y": 78, "x": 530, "width": 100, "var": "skin", "skin": "index/skin.png", "name": "skin", "height": 120 } }, { "type": "Button", "props": { "y": 69, "x": 169, "width": 320, "var": "start", "stateNum": 1, "skin": "index/stat.png", "name": "start", "height": 130 } }] }, { "type": "Image", "props": { "y": 35, "x": 31, "var": "audio", "skin": "index/audio_on.png", "name": "audio" } }, { "type": "Image", "props": { "y": 32, "x": 141, "width": 63, "skin": "index/shock.png", "height": 69 } }] }, { "type": "Box", "props": { "y": 158, "x": 340, "var": "game", "name": "game" }, "child": [{ "type": "FontClip", "props": { "y": 8, "x": 2, "visible": false, "var": "Fraction", "value": "0", "skin": "index/num.png", "sheet": "0123456789", "name": "Fraction" } }] }, { "type": "Image", "props": { "y": 835, "x": 234, "visible": false, "var": "sure", "skin": "index/sure.png", "name": "sure" } }] };
     ui.indexUI = indexUI;
+})(ui || (ui = {}));
+(function (ui) {
+    class shoppingUI extends Dialog {
+        constructor() { super(); }
+        createChildren() {
+            super.createChildren();
+            this.createView(ui.shoppingUI.uiView);
+        }
+    }
+    shoppingUI.uiView = { "type": "Dialog", "props": { "width": 720, "height": 1280 }, "child": [{ "type": "Image", "props": { "y": 929, "x": 231, "var": "Sure", "skin": "index/sure.png", "name": "Sure" } }, { "type": "Image", "props": { "y": 568, "x": 27, "width": 52, "skin": "index/return.png", "pivotY": 1, "pivotX": 1, "height": 78 } }, { "type": "Image", "props": { "y": 642, "x": 682, "width": 52, "skin": "index/return.png", "rotation": 180, "pivotY": 1, "pivotX": 1, "height": 78 } }, { "type": "Image", "props": { "y": 0, "x": 0, "width": 720, "skin": "index/store.png" } }, { "type": "Image", "props": { "y": 35, "x": 52, "width": 36, "var": "return", "skin": "index/return.png", "pivotY": 1, "pivotX": 1, "name": "return", "height": 54 } }] };
+    ui.shoppingUI = shoppingUI;
 })(ui || (ui = {}));
 //# sourceMappingURL=layaUI.max.all.js.map
 // 程序入口
@@ -96909,11 +97393,11 @@ class LayaAir3D {
         //适配模式
         Laya.stage.alignV = "middle";
         Laya.stage.alignH = "center";
-        Laya.stage.scaleMode = "exactfit";
-        Laya.stage.screenMode = "vertical";
+        Laya.stage.scaleMode = "fixedwidth";
+        Laya.stage.screenMode = "none";
         //开启统计信息
-        //Laya.Stat.show();
-        // 进入game场景
+        // Laya.Stat.show();
+        // 初始化场景
         TOOLS.runScene(WetchGame.gameScene);
     }
 }

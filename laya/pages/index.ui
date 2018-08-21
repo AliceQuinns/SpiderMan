@@ -1,8 +1,8 @@
 {
     "x":0,
     "type":"Dialog",
-    "selectedBox":35,
-    "selecteID":5,
+    "selectedBox":15,
+    "selecteID":15,
     "props":{"width":720,"sceneColor":"#ffffff","height":1280},
     "nodeParent":-1,
     "label":"Dialog",
@@ -18,42 +18,27 @@
             "props":{"y":0,"x":3,"width":720,"var":"home","name":"home","height":1280},
             "nodeParent":1,
             "label":"Box(home)",
-            "isOpen":true,
+            "isOpen":false,
             "isDirectory":true,
             "isAniNode":true,
             "hasChild":true,
             "compId":14,
             "child":[
                 {
-                    "x":30,
                     "type":"Image",
                     "props":{"y":215,"x":342,"width":395,"var":"logo","skin":"index/logo.png","scaleY":0.5,"scaleX":0.5,"name":"logo","height":336,"anchorY":0.5,"anchorX":0.5},
                     "nodeParent":14,
                     "label":"Image(logo)",
                     "isOpen":true,
-                    "isDirectory":true,
+                    "isDirectory":false,
                     "isAniNode":true,
-                    "hasChild":true,
+                    "hasChild":false,
                     "compId":18,
                     "child":[
-                        {
-                            "x":45,
-                            "type":"Image",
-                            "props":{"y":-12,"x":219,"width":86,"skin":"index/i.png","rotation":0,"height":86},
-                            "nodeParent":18,
-                            "label":"Image",
-                            "isOpen":true,
-                            "isDirectory":false,
-                            "isAniNode":true,
-                            "hasChild":false,
-                            "compId":19,
-                            "child":[
-                                ]
-                        }],
+                        ],
                     "$HIDDEN":false
                 },
                 {
-                    "x":30,
                     "type":"Box",
                     "props":{"x":36,"var":"btn_groug","top":1280,"name":"btn_groug"},
                     "nodeParent":14,
@@ -65,7 +50,6 @@
                     "compId":35,
                     "child":[
                         {
-                            "x":45,
                             "type":"Image",
                             "props":{"y":77,"x":30,"width":100,"var":"setup","skin":"index/frans.png","name":"setup","height":120},
                             "nodeParent":35,
@@ -78,7 +62,6 @@
                                 ]
                         },
                         {
-                            "x":45,
                             "type":"Image",
                             "props":{"y":78,"x":530,"width":100,"var":"skin","skin":"index/skin.png","name":"skin","height":120},
                             "nodeParent":35,
@@ -91,7 +74,6 @@
                                 ]
                         },
                         {
-                            "x":45,
                             "type":"Button",
                             "props":{"y":69,"x":169,"width":320,"var":"start","stateNum":"1","skin":"index/stat.png","name":"start","height":130},
                             "nodeParent":35,
@@ -101,12 +83,12 @@
                             "hasChild":false,
                             "compId":8,
                             "child":[
-                                ]
+                                ],
+                            "$HIDDEN":true
                         }],
                     "$HIDDEN":false
                 },
                 {
-                    "x":30,
                     "type":"Image",
                     "props":{"y":35,"x":31,"var":"audio","skin":"index/audio_on.png","name":"audio"},
                     "nodeParent":14,
@@ -119,7 +101,6 @@
                         ]
                 },
                 {
-                    "x":30,
                     "type":"Image",
                     "props":{"y":32,"x":141,"width":63,"skin":"index/shock.png","height":69},
                     "nodeParent":14,
@@ -139,17 +120,19 @@
             "props":{"y":158,"x":340,"var":"game","name":"game"},
             "nodeParent":1,
             "label":"Box(game)",
-            "isOpen":false,
+            "isOpen":true,
             "isDirectory":true,
             "isAniNode":true,
             "hasChild":true,
             "compId":15,
             "child":[
                 {
+                    "x":30,
                     "type":"FontClip",
                     "props":{"y":8,"x":2,"visible":false,"var":"Fraction","value":"0","skin":"index/num.png","sheet":"0123456789","name":"Fraction"},
                     "nodeParent":15,
                     "label":"FontClip(Fraction)",
+                    "isOpen":true,
                     "isDirectory":false,
                     "isAniNode":true,
                     "hasChild":false,
@@ -158,6 +141,19 @@
                         ]
                 }],
             "$HIDDEN":true
+        },
+        {
+            "x":15,
+            "type":"Image",
+            "props":{"y":835,"x":234,"visible":false,"var":"sure","skin":"index/sure.png","name":"sure"},
+            "nodeParent":1,
+            "label":"Image(sure)",
+            "isDirectory":false,
+            "isAniNode":true,
+            "hasChild":false,
+            "compId":41,
+            "child":[
+                ]
         }],
     "animations":[
         {

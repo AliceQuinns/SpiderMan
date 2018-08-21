@@ -15,7 +15,7 @@
         {
             "x":15,
             "type":"Button",
-            "props":{"y":1020,"x":70,"var":"reset","stateNum":"1","skin":"index/btn_play_againx.png","name":"reset"},
+            "props":{"y":794,"x":134,"var":"reset","stateNum":"1","skin":"index/btn_play_againx.png","name":"reset"},
             "nodeParent":1,
             "label":"Button(reset)",
             "isDirectory":false,
@@ -28,7 +28,7 @@
         {
             "x":15,
             "type":"Button",
-            "props":{"y":1042,"x":509,"width":185,"var":"share","stateNum":"1","skin":"index/share.png","name":"share","height":107},
+            "props":{"y":970,"x":257,"width":185,"var":"share","stateNum":"1","skin":"index/share.png","name":"share","height":107},
             "nodeParent":1,
             "label":"Button(share)",
             "isDirectory":false,
